@@ -1,0 +1,162 @@
+html {
+    background: linear-gradient(to bottom, #00122e, #000814);
+    min-height: 100vh;
+}
+
+body {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 400;
+    font-size: 16px; /* Adjusted from .8rem to 16px for better readability */
+    color: white;
+    line-height: 1.6rem;
+    margin: 0;
+    padding: 20px;
+    overflow-x: hidden; /* Hide horizontal scrollbar */
+}
+
+body::-webkit-scrollbar-thumb {
+    background: transparent;
+}
+
+/* Main container */
+.main-container {
+    width: 90%;
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+}
+
+/* Question container */
+.question-container {
+    margin-bottom: 30px;
+}
+
+/* Question text */
+#question {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    height: 60px;
+}
+
+/* Answer choices list */
+.answer-choices {
+    list-style: none;
+    padding: 0;
+}
+
+/* Answer choice item */
+.answer-choices li {
+    background-color: rgba(255, 255, 255, 0.1);
+    margin-bottom: 10px;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+/*
+.answer-choices li:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+*/
+
+#correct-answer {
+    background-color: #54c800;
+    color: black;
+    font-weight: 600;
+}
+
+/* Button styles */
+.button {
+    display: inline-block;
+    padding: 10px 20px;
+    margin: 5px;
+    background-color: #00a3fb;
+    color: #003762;
+    font-size: 1rem;
+    font-weight: 700;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.button:hover {
+    background-color: #008ad2;
+}
+
+.button-active {
+    background-color: red;
+}
+
+#difficulty-text {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+/* Difficulty selection */
+.difficulty-selection {
+    margin-bottom: 40px;
+    text-align: center;
+}
+
+/* Difficulty button */
+.difficulty-button {
+    padding: 5px 10px;
+    margin-right: 10px;
+    background-color: transparent;
+    color: #00a3fb;
+    border: 2px solid #00a3fb;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.difficulty-button:hover {
+    background-color: #00a3fb;
+    color: #003762;
+}
+
+#questionCount {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+/* Navigation buttons */
+.navigation-buttons {
+    text-align: center;
+}
+
+/* Download button */
+.download-button {
+    text-align: center;
+    margin-top: 40px;
+}
+
+#submit {
+    background-color: transparent;
+    color: #54c800;
+    border: 2px solid blue;
+    font-weight: 600;
+    border: none;
+    margin-top: 30px;
+}
+
+#submit:hover {
+    background-color: #54c800;
+    color: black;
+    font-weight: 600;
+    border: none;
+    margin-top: 30px;
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    margin-top: 40px;
+    font-size: 0.9rem;
+}

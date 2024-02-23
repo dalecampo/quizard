@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Quiz Brain Trust</title>
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+
+        <div class="main-container">
+
+            <!-- Question Container -->
+            <div class="question-container">
+                <div id="question">What is the capital of France?</div>
+                <ul class="answer-choices">
+                    <li>London</li>
+                    <li>Berlin</li>
+                    <li>Paris</li>
+                    <li>Rome</li>
+                </ul>
+            </div>
+
+            <!-- Difficulty Selection -->
+            <div class="difficulty-selection">
+                <div id="difficulty-text">Difficulty</div>
+                <button class="difficulty-button" id="easy">1</button>
+                <button class="difficulty-button" id="medium">2</button>
+                <button class="difficulty-button" id="hard">3</button>
+            </div>
+
+            <p id="questionCount">1/10</p>
+
+            <!-- Navigation Buttons -->
+            <div class="navigation-buttons">
+                <button class="button" id="prev">Prev</button>
+                <button class="button" id="next">Next</button>
+            </div>
+
+            <div class="download-button">
+                <button class="button" id="submit">Download New CSV</button>
+            </div>
+
+        </div>
+
+        <script src="script.js"></script>
+    </body>
+</html>
