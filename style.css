@@ -37,18 +37,31 @@ body::-webkit-scrollbar-thumb {
 #question {
     font-size: 1.25rem;
     font-weight: 600;
-    margin-bottom: 20px;
+    padding: 0px 80px 0px 120px;
     height: 60px;
+}
+
+#check-icon {
+    display: flex;
+    align-items: flex-start;
+    width: 30px;
+    margin-top: 24px;
+}
+
+.answer-choice-container {
+    display: flex;
+    padding: 0px 100px;
 }
 
 /* Answer choices list */
 .answer-choices {
     list-style: none;
-    padding: 0;
+    padding: 0px 0px 0px 10px;
 }
 
 /* Answer choice item */
 .answer-choices li {
+    width: 500px;
     background-color: rgba(255, 255, 255, 0.1);
     margin-bottom: 10px;
     padding: 10px 15px;
@@ -104,10 +117,15 @@ body::-webkit-scrollbar-thumb {
     text-align: center;
 }
 
+.difficulty-label {
+    color: #00a3fb;
+    padding: 0px 5px;
+}
+
 /* Difficulty button */
 .difficulty-button {
     padding: 5px 10px;
-    margin-right: 10px;
+    margin: 0px 5px;
     background-color: transparent;
     color: #00a3fb;
     border: 2px solid #00a3fb;

@@ -13,21 +13,30 @@
 
             <!-- Question Container -->
             <div class="question-container">
-                <div id="question">What is the capital of France?</div>
-                <ul class="answer-choices">
-                    <li>London</li>
-                    <li>Berlin</li>
-                    <li>Paris</li>
-                    <li>Rome</li>
-                </ul>
+                <div id="question">Is this an example question?</div>
+                <div class="answer-choice-container">
+                    <div id="check-icon">
+                        <img src="Check Icon.svg" alt="Check Icon"/>
+                    </div>
+                    <ul class="answer-choices">
+                        <li>Answer Choice 1</li>
+                        <li>Answer Choice 2</li>
+                        <li>Answer Choice 3</li>
+                        <li>Answer Choice 4</li>
+                    </ul>
+                </div>
             </div>
 
             <!-- Difficulty Selection -->
             <div class="difficulty-selection">
                 <div id="difficulty-text">Difficulty</div>
+                <label class="difficulty-label">Easy</label>
                 <button class="difficulty-button" id="easy">1</button>
-                <button class="difficulty-button" id="medium">2</button>
-                <button class="difficulty-button" id="hard">3</button>
+                <button class="difficulty-button" id="easy-medium">2</button>
+                <button class="difficulty-button" id="medium">3</button>
+                <button class="difficulty-button" id="medium-hard">4</button>
+                <button class="difficulty-button" id="hard">5</button>
+                <label class="difficulty-label">Hard</label>
             </div>
 
             <p id="questionCount">1/10</p>

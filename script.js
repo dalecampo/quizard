@@ -129,12 +129,20 @@ function setupEventListeners() {
       markDifficulty(1);
     });
   
-    document.getElementById('medium').addEventListener('click', function() {
+    document.getElementById('easy-medium').addEventListener('click', function() {
       markDifficulty(2);
     });
   
-    document.getElementById('hard').addEventListener('click', function() {
+    document.getElementById('medium').addEventListener('click', function() {
       markDifficulty(3);
+    });
+
+    document.getElementById('medium-hard').addEventListener('click', function() {
+      markDifficulty(4);
+    });
+
+    document.getElementById('hard').addEventListener('click', function() {
+      markDifficulty(5);
     });
   
     document.getElementById('prev').addEventListener('click', previousQuestion);
