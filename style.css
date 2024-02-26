@@ -6,7 +6,7 @@ html {
 body {
     font-family: 'Montserrat', sans-serif;
     font-weight: 400;
-    font-size: 16px; /* Adjusted from .8rem to 16px for better readability */
+    font-size: 16px;
     color: white;
     line-height: 1.6rem;
     margin: 0;
@@ -42,9 +42,10 @@ body::-webkit-scrollbar-thumb {
 }
 
 #check-icon {
-    display: flex;
+    display: none;
+    /* display: flex; */
     align-items: flex-start;
-    width: 30px;
+    max-width: 30px;
     margin-top: 24px;
 }
 
@@ -124,7 +125,8 @@ body::-webkit-scrollbar-thumb {
 
 /* Difficulty button */
 .difficulty-button {
-    padding: 5px 10px;
+    font-weight: 800;
+    padding: 8px 10px;
     margin: 0px 5px;
     background-color: transparent;
     color: #00a3fb;
