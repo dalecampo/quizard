@@ -37,7 +37,8 @@ body::-webkit-scrollbar-thumb {
 #question {
     font-size: 1.25rem;
     font-weight: 600;
-    padding: 0px 80px 0px 120px;
+    /* Change the 80px padding-left to 120px once the check icon is re-added */
+    padding: 0px 80px 0px 80px;
     height: 60px;
 }
 
