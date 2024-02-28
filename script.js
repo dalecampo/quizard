@@ -76,7 +76,8 @@ function displayQuestion() {
 
 // Function to mark the difficulty score
 function markDifficulty(score) {
-  triviaQuestions[currentQuestionIndex]['Difficulty'] = score.toString();
+  const currentItem = triviaQuestions[currentQuestionIndex];
+  currentItem['NewDiff'] = score.toString(); // Save the user's input in the 'NewDiff' property
   nextQuestion(); // Move to the next question after marking difficulty
 }
 
@@ -98,17 +99,31 @@ function nextQuestion() {
 
 // Function to convert the triviaQuestions array back to CSV format
 function arrayToCSV(array) {
-    const headers = Object.keys(array[0]);
-    const csvRows = array.map(row => 
+  let headers = Object.keys(array[0]);
+  
+  // Check if 'NewDiff' column already exists in the data; if not, add it after 'Difficulty'
+  const difficultyIndex = headers.indexOf('Difficulty');
+  const newDiffIndex = headers.indexOf('NewDiff');
+  
+  // If 'NewDiff' is not found in the array, we insert it right after 'Difficulty'
+  if (newDiffIndex === -1 && difficultyIndex !== -1) {
+      headers.splice(difficultyIndex + 1, 0, 'NewDiff');
+  } else if (newDiffIndex > difficultyIndex + 1) {
+      // 'NewDiff' exists but not in the right position; remove it and re-insert at correct place
+      headers.splice(newDiffIndex, 1);
+      headers.splice(difficultyIndex + 1, 0, 'NewDiff');
+  }
+  
+  const csvRows = array.map(row => 
       headers.map(fieldName => {
-        const value = row[fieldName] || ''; // Handle undefined or null values
-        // Enclose in double quotes and escape internal quotes if necessary
-        return /[\n",]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
+          let value = row[fieldName] || ''; // Handle undefined or null values
+          // Enclose in double quotes and escape internal quotes if necessary
+          return /[\n",]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
       }).join(',')
-    );
+  );
 
-    csvRows.unshift(headers.join(',')); // Add header row
-    return csvRows.join('\r\n');
+  csvRows.unshift(headers.join(',')); // Add header row
+  return csvRows.join('\r\n');
 }
 
 // Function to download the updated CSV
