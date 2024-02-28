@@ -30,6 +30,8 @@ function loadCSV() {
     .then(text => {
       triviaQuestions = parseCSV(text);
       displayQuestion();
+      // Set up event listener for keyboard input
+      document.addEventListener('keydown', handleKeydown);
     })
     .catch(error => console.error('Error loading CSV:', error));
 }
@@ -121,7 +123,31 @@ function downloadCSV() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+}
+
+// Function to handle keydown events for marking difficulty with keyboard keys 1-5
+// and navigating questions with left and right arrow keys.
+function handleKeydown(event) {
+  switch (event.key) {
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+      // Call markDifficulty with the corresponding number
+      markDifficulty(parseInt(event.key));
+      break;
+    case 'ArrowLeft':
+      // Call previousQuestion when the left arrow key is pressed
+      previousQuestion();
+      break;
+    case 'ArrowRight':
+      // Call nextQuestion when the right arrow key is pressed
+      nextQuestion();
+      break;
+    // Add additional cases here if needed
   }
+}
 
 // Function to set up event listeners
 function setupEventListeners() {
