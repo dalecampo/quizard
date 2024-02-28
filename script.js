@@ -38,47 +38,77 @@ function loadCSV() {
 
 // Function to display the current question and answer choices
 function displayQuestion() {
-    const questionElement = document.getElementById('question');
-    const answerChoicesElement = document.getElementsByClassName('answer-choices')[0];
-    const questionCountElement = document.getElementById('questionCount'); // Get the question count element
+  const questionElement = document.getElementById('question');
+  const answerChoicesElement = document.getElementsByClassName('answer-choices')[0];
+  const questionCountElement = document.getElementById('questionCount'); // Get the question count element
+
+  // Clear previous answer choices
+  answerChoicesElement.innerHTML = '';
+
+  // Get the current question and answers
+  const currentItem = triviaQuestions[currentQuestionIndex];
+  const question = currentItem['Question'];
+  const correctAnswer = currentItem['Correct'];
+  const wrongAnswers = [currentItem['Wrong1'], currentItem['Wrong2'], currentItem['Wrong3']];
+
+  // Set the question text
+  questionElement.textContent = question;
+
+  // Update the question count display
+  questionCountElement.textContent = `${currentQuestionIndex + 1}/${triviaQuestions.length}`; // 1-based index for display
+
+  // Display the answer choices with the correct answer first
+  const answers = [correctAnswer, ...wrongAnswers];
+
+  // Create an element for the correct answer and apply a unique ID
+  const correctLi = document.createElement('li');
+  correctLi.textContent = correctAnswer;
+  correctLi.id = 'correct-answer'; // Add an ID for styling the correct answer differently
+  answerChoicesElement.appendChild(correctLi);
+
+  // Append the wrong answers
+  wrongAnswers.forEach(answer => {
+    const li = document.createElement('li');
+    li.textContent = answer;
+    answerChoicesElement.appendChild(li);
+  });
+
+  // Check if 'NewDiff' is set; otherwise, use 'Difficulty'
+  const difficultyRating = currentItem['NewDiff'] || currentItem['Difficulty'];
+
+  // Reset button styles for all difficulty buttons
+  for (let i = 1; i <= 5; i++) {
+    document.getElementById(`difficulty-button-${i}`).classList.remove('button-hover');
+  }
   
-    // Clear previous answer choices
-    answerChoicesElement.innerHTML = '';
-  
-    // Get the current question and answers
-    const currentItem = triviaQuestions[currentQuestionIndex];
-    const question = currentItem['Question'];
-    const correctAnswer = currentItem['Correct'];
-    const wrongAnswers = [currentItem['Wrong1'], currentItem['Wrong2'], currentItem['Wrong3']];
-  
-    // Set the question text
-    questionElement.textContent = question;
-  
-    // Update the question count display
-    questionCountElement.textContent = `${currentQuestionIndex + 1}/${triviaQuestions.length}`; // 1-based index for display
-  
-    // Display the answer choices with the correct answer first
-    const answers = [correctAnswer, ...wrongAnswers];
-  
-    // Create an element for the correct answer and apply a unique ID
-    const correctLi = document.createElement('li');
-    correctLi.textContent = correctAnswer;
-    correctLi.id = 'correct-answer'; // Add an ID for styling the correct answer differently
-    answerChoicesElement.appendChild(correctLi);
-  
-    // Append the wrong answers
-    wrongAnswers.forEach(answer => {
-      const li = document.createElement('li');
-      li.textContent = answer;
-      answerChoicesElement.appendChild(li);
-    });
+  // Apply hover state style to the button matching the difficulty rating
+  if (difficultyRating) {
+    document.getElementById(`difficulty-button-${difficultyRating}`).classList.add('button-hover');
+  }    
 }
 
-// Function to mark the difficulty score
+// Function to mark the difficulty score and highlight the corresponding button
 function markDifficulty(score) {
   const currentItem = triviaQuestions[currentQuestionIndex];
   currentItem['NewDiff'] = score.toString(); // Save the user's input in the 'NewDiff' property
-  nextQuestion(); // Move to the next question after marking difficulty
+  highlightDifficultyButton(`difficulty-button-${score}`); // Highlight the button
+  //nextQuestion(); // Move to the next question after marking difficulty
+
+  // Set a timeout to delay moving to the next question
+  setTimeout(() => {
+    nextQuestion(); // Move to the next question after marking difficulty
+  }, 500); // Adjust the delay as needed (in milliseconds)
+}
+
+// Reusable function to apply hover state style to a button
+function highlightDifficultyButton(buttonId) {
+  // Reset button styles for all difficulty buttons
+  for (let i = 1; i <= 5; i++) {
+    document.getElementById(`difficulty-button-${i}`).classList.remove('button-hover');
+  }
+  
+  // Apply hover state style to the specified button
+  document.getElementById(buttonId).classList.add('button-hover');
 }
 
 // Function to move to the previous question
@@ -166,33 +196,24 @@ function handleKeydown(event) {
 
 // Function to set up event listeners
 function setupEventListeners() {
-    document.getElementById('easy').addEventListener('click', function() {
-      markDifficulty(1);
+  // Add click event listeners to the difficulty buttons
+  for (let i = 1; i <= 5; i++) {
+    document.getElementById(`difficulty-button-${i}`).addEventListener('click', function() {
+      markDifficulty(i);
     });
-  
-    document.getElementById('easy-medium').addEventListener('click', function() {
-      markDifficulty(2);
-    });
-  
-    document.getElementById('medium').addEventListener('click', function() {
-      markDifficulty(3);
-    });
-
-    document.getElementById('medium-hard').addEventListener('click', function() {
-      markDifficulty(4);
-    });
-
-    document.getElementById('hard').addEventListener('click', function() {
-      markDifficulty(5);
-    });
-  
-    document.getElementById('prev').addEventListener('click', previousQuestion);
-    document.getElementById('next').addEventListener('click', nextQuestion);
-    document.getElementById('submit').addEventListener('click', downloadCSV);
   }
+
+  // Add keydown event listener to the document
+  document.addEventListener('keydown', handleKeydown);
   
-  // Call loadCSV and set up event listeners when the page loads
-  window.onload = function() {
-    loadCSV();
-    setupEventListeners();
-  };
+  // Other event listeners...
+  document.getElementById('prev').addEventListener('click', previousQuestion);
+  document.getElementById('next').addEventListener('click', nextQuestion);
+  document.getElementById('submit').addEventListener('click', downloadCSV);
+}
+  
+// Call loadCSV and set up event listeners when the page loads
+window.onload = function() {
+  loadCSV();
+  setupEventListeners();
+};

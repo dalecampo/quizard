@@ -137,7 +137,7 @@ body::-webkit-scrollbar-thumb {
     transition: background-color 0.3s ease;
 }
 
-.difficulty-button:hover {
+.difficulty-button:hover, .difficulty-button.button-hover {
     background-color: #00a3fb;
     color: #003762;
 }
