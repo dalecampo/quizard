@@ -62,11 +62,10 @@
 
         <script src="script.js"></script>
         <script>
-            let adminMode = false;
+            let adminMode = true;
             
             if (!adminMode) {
                 window.addEventListener('beforeunload', function (e) {
-                // Set the confirmation message
                 var confirmationMessage = 'Leaving this page will lose progress. Are you sure?';
 
                 // For modern browsers, setting returnValue on the event will trigger the confirmation

@@ -1,5 +1,6 @@
 let currentQuestionIndex = 0;
 let triviaQuestions = []; // This will be populated with the CSV content
+let csvOriginalFileName = 'Example Game.csv'
 
 // Function to parse the CSV file and extract necessary columns
 function parseCSV(text) {
@@ -25,7 +26,7 @@ function parseCSV(text) {
 
 // Function to load the CSV data
 function loadCSV() {
-  fetch('Trivia.csv')
+  fetch(`00_CSV Files/${csvOriginalFileName}`)
     .then(response => response.text())
     .then(text => {
       triviaQuestions = parseCSV(text);
