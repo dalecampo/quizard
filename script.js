@@ -1,6 +1,6 @@
 let currentQuestionIndex = 0;
 let triviaQuestions = []; // This will be populated with the CSV content
-let csvOriginalFileName = 'Example Game.csv'
+let csvOriginalFileName = 'Special_SXSW-Party.csv'
 
 // Function to parse the CSV file and extract necessary columns
 function parseCSV(text) {
@@ -185,8 +185,10 @@ function downloadCSV() {
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
+    let newCSVFileName = csvOriginalFileName.replace('.csv', '');
+
     link.setAttribute('href', url);
-    link.setAttribute('download', 'Trivia (Rated).csv');
+    link.setAttribute('download', `${newCSVFileName} (Rated).csv`);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
