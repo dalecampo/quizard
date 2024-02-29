@@ -40,7 +40,7 @@ function loadCSV() {
 function displayQuestion() {
   const questionElement = document.getElementById('question');
   const answerChoicesElement = document.getElementsByClassName('answer-choices')[0];
-  const questionCountElement = document.getElementById('questionCount'); // Get the question count element
+  const questionCountElement = document.getElementById('questionCount');
 
   // Clear previous answer choices
   answerChoicesElement.innerHTML = '';
@@ -93,6 +93,7 @@ function markDifficulty(score) {
   currentItem['NewDiff'] = score.toString(); // Save the user's input in the 'NewDiff' property
   highlightDifficultyButton(`difficulty-button-${score}`); // Highlight the button
   //nextQuestion(); // Move to the next question after marking difficulty
+  updateDifficultyCountDisplay();
 
   // Set a timeout to delay moving to the next question
   setTimeout(() => {
@@ -109,6 +110,27 @@ function highlightDifficultyButton(buttonId) {
   
   // Apply hover state style to the specified button
   document.getElementById(buttonId).classList.add('button-hover');
+}
+
+// Function to count the number of non-empty values in the 'NewDiff' column
+function countMarkedDifficulties() {
+  let count = 0;
+  triviaQuestions.forEach(function(question) {
+    // Check if 'NewDiff' exists and is not empty
+    if (question['NewDiff']) {
+      count++;
+    }
+  });
+  return count;
+}
+
+// Function to update the display of the count on the webpage
+function updateDifficultyCountDisplay() {
+  const count = countMarkedDifficulties();
+  const countElement = document.getElementById('difficulty-count');
+  if (countElement) {
+    countElement.textContent = `${count} of ${triviaQuestions.length}`;
+  }
 }
 
 // Function to move to the previous question

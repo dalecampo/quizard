@@ -18,6 +18,12 @@ body::-webkit-scrollbar-thumb {
     background: transparent;
 }
 
+#total-rated {
+    margin-top: 40px;
+    text-align: center;
+    color: #00a3fb;
+}
+
 /* Main container */
 .main-container {
     width: 90%;
@@ -171,7 +177,6 @@ body::-webkit-scrollbar-thumb {
 #submit {
     background-color: transparent;
     color: #54c800;
-    border: 2px solid blue;
     font-weight: 600;
     border: none;
     margin-top: 30px;
