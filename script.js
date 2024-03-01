@@ -1,6 +1,6 @@
 let currentQuestionIndex = 0;
 let triviaQuestions = []; // This will be populated with the CSV content
-let csvOriginalFileName = 'Special_SXSW-Party.csv'
+let csvOriginalFileName = 'Special_SXSW-Party_40.csv'
 
 // Function to parse the CSV file and extract necessary columns
 function parseCSV(text) {
