@@ -31,6 +31,7 @@ function loadCSV() {
     .then(text => {
       triviaQuestions = parseCSV(text);
       displayQuestion();
+      updateDifficultyCountDisplay();
       // Set up event listener for keyboard input
       document.addEventListener('keydown', handleKeydown);
     })
@@ -41,7 +42,7 @@ function loadCSV() {
 function displayQuestion() {
   const questionElement = document.getElementById('question');
   const answerChoicesElement = document.getElementsByClassName('answer-choices')[0];
-  const questionCountElement = document.getElementById('questionCount');
+  const questionCountElement = document.getElementById('question-count');
 
   // Clear previous answer choices
   answerChoicesElement.innerHTML = '';
@@ -113,7 +114,7 @@ function highlightDifficultyButton(buttonId) {
   document.getElementById(buttonId).classList.add('button-hover');
 }
 
-// Function to count the number of non-empty values in the 'NewDiff' column
+// Count the number of non-empty values in the 'NewDiff' column
 function countMarkedDifficulties() {
   let count = 0;
   triviaQuestions.forEach(function(question) {
@@ -125,16 +126,16 @@ function countMarkedDifficulties() {
   return count;
 }
 
-// Function to update the display of the count on the webpage
+// Update the display of the count on the webpage
 function updateDifficultyCountDisplay() {
   const count = countMarkedDifficulties();
   const countElement = document.getElementById('difficulty-count');
   if (countElement) {
-    countElement.textContent = `${count} of ${triviaQuestions.length}`;
+    countElement.textContent = `${count}/${triviaQuestions.length}`;
   }
 }
 
-// Function to move to the previous question
+// Move to the previous question
 function previousQuestion() {
   if (currentQuestionIndex > 0) {
     currentQuestionIndex -= 1;
@@ -142,7 +143,7 @@ function previousQuestion() {
   }
 }
 
-// Function to move to the next question
+// Move to the next question
 function nextQuestion() {
   if (currentQuestionIndex < triviaQuestions.length - 1) {
     currentQuestionIndex += 1;
@@ -150,7 +151,7 @@ function nextQuestion() {
   }
 }
 
-// Function to convert the triviaQuestions array back to CSV format
+// Convert the triviaQuestions array back to CSV format
 function arrayToCSV(array) {
   let headers = Object.keys(array[0]);
   
@@ -179,7 +180,7 @@ function arrayToCSV(array) {
   return csvRows.join('\r\n');
 }
 
-// Function to download the updated CSV
+// Download the updated CSV
 function downloadCSV() {
     const csvContent = arrayToCSV(triviaQuestions);
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -195,7 +196,7 @@ function downloadCSV() {
     document.body.removeChild(link);
 }
 
-// Function to handle keydown events for marking difficulty with keyboard keys 1-5
+// Handle keydown events for marking difficulty with keyboard keys 1-5
 // and navigating questions with left and right arrow keys.
 function handleKeydown(event) {
   switch (event.key) {
@@ -219,7 +220,7 @@ function handleKeydown(event) {
   }
 }
 
-// Function to set up event listeners
+// Set up event listeners
 function setupEventListeners() {
   // Add click event listeners to the difficulty buttons
   for (let i = 1; i <= 5; i++) {

@@ -5,18 +5,25 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Quiz Brain Trust</title>
         <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link href="https://fonts.googleapis.com/css2?family=Grenze:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="style.css">
     </head>
     <body>
-
+        <header>
+            <span>
+                <img id="wizard-icon" src="01_Images/wizard.png" alt="wizard icon">
+                <h1>Quizard</h1>
+            </span>
+        </header>
         <div class="main-container">
 
             <!-- Question Container -->
             <div class="question-container">
-                <div id="question">Is this an example question?</div>
+                <div class="truncate-multiline" id="question">Is this an example question?</div>
                 <div class="answer-choice-container">
                     <div id="check-icon">
-                        <img src="Check Icon.svg" alt="Check Icon"/>
+                        <img src="01_Images/Check Icon.svg" alt="Check Icon"/>
                     </div>
                     <ul class="answer-choices">
                         <li>Answer Choice 1</li>
@@ -41,7 +48,7 @@
 
             <div class="question-count-section">
                 <label id="question-count-label">Question</label>
-                <p id="questionCount">1/10</p>
+                <p id="question-count">1/10</p>
             </div>
 
             <!-- Navigation Buttons -->
@@ -51,7 +58,8 @@
             </div>
 
             <div id="total-rated">
-                Rated <span id="difficulty-count">0</span> Questions
+                <label id="question-count-label">Rated</label>
+                <p id="difficulty-count">0/10</p>
             </div>
 
             <div class="download-button">
@@ -60,9 +68,12 @@
 
         </div>
 
+        <footer>
+            <a href="https://www.flaticon.com/free-icons/wizard" title="wizard icons">Wizard icons created by Flat Icons - Flaticon</a>
+        </footer>
         <script src="script.js"></script>
         <script>
-            let adminMode = false;
+            let adminMode = true;
             
             if (!adminMode) {
                 window.addEventListener('beforeunload', function (e) {
