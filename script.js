@@ -38,7 +38,6 @@ function loadCSV() {
     .catch(error => console.error('Error loading CSV:', error));
 }
 
-// Function to display the current question and answer choices
 function displayQuestion() {
   const questionElement = document.getElementById('question');
   const answerChoicesElement = document.getElementsByClassName('answer-choices')[0];
@@ -65,7 +64,7 @@ function displayQuestion() {
   // Create an element for the correct answer and apply a unique ID
   const correctLi = document.createElement('li');
   correctLi.textContent = correctAnswer;
-  correctLi.id = 'correct-answer'; // Add an ID for styling the correct answer differently
+  correctLi.id = 'correct-answer'; // Assign this ID to let us style the correct answer differently
   answerChoicesElement.appendChild(correctLi);
 
   // Append the wrong answers
@@ -75,8 +74,8 @@ function displayQuestion() {
     answerChoicesElement.appendChild(li);
   });
 
-  // Check if 'NewDiff' is set; otherwise, use 'Difficulty'
-  const difficultyRating = currentItem['NewDiff'] || currentItem['Difficulty'];
+  // Check if 'NewDiff' is set; otherwise, do not display any difficulty
+  const difficultyRating = currentItem['NewDiff'];
 
   // Reset button styles for all difficulty buttons
   for (let i = 1; i <= 5; i++) {
