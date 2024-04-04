@@ -112,6 +112,19 @@ h1 {
     background-color: #54c800;
     color: black;
     font-weight: 600;
+    opacity: 1;
+}
+
+#incorrect-answer {
+    background-color: #f34f19;
+    color: black;
+    font-weight: 600;
+    opacity: 1;
+}
+
+.disabled {
+    pointer-events: none; /* Prevent further clicks */
+    opacity: 0.6;
 }
 
 /* Button styles */

@@ -70,37 +70,49 @@ function displayQuestion() {
   // Get the current question and its stored randomized answers
   const currentItem = triviaQuestions[currentQuestionIndex];
   const question = currentItem['Question'];
-  const randomizedAnswers = currentItem['RandomizedAnswers']; // Use the stored randomized answers
+  const correctAnswer = currentItem['Correct'];
+  const randomizedAnswers = currentItem['RandomizedAnswers'];
 
   // Set the question text
   questionElement.textContent = question;
 
   // Update the question count display
-  questionCountElement.textContent = `${currentQuestionIndex + 1}/${triviaQuestions.length}`; // 1-based index for display
+  questionCountElement.textContent = `${currentQuestionIndex + 1}/${triviaQuestions.length}`;
 
   // Display the stored randomized answer choices
   randomizedAnswers.forEach(answer => {
     const li = document.createElement('li');
     li.textContent = answer;
-    // If the answer is the correct one, apply a unique ID for styling
-    if (answer === currentItem['Correct']) {
-      li.id = 'correct-answer';
-    }
+    li.addEventListener('click', () => handleAnswerClick(li, answer, correctAnswer));
     answerChoicesElement.appendChild(li);
   });
+}
 
-  // Check if 'NewDiff' is set; otherwise, do not display any difficulty
-  const difficultyRating = currentItem['NewDiff'];
+function handleAnswerClick(selectedLi, selectedAnswer, correctAnswer) {
+  // Retrieve all the answer LIs
+  const answerList = document.querySelectorAll('.answer-choices li');
 
-  // Reset button styles for all difficulty buttons
-  for (let i = 1; i <= 5; i++) {
-    document.getElementById(`difficulty-button-${i}`).classList.remove('button-hover');
+  // Disable further clicks on answers and remove event listeners
+  answerList.forEach(li => {
+    li.removeEventListener('click', handleAnswerClick);
+    li.classList.add('disabled');
+  });
+
+  // Check if the selected answer is correct
+  if (selectedAnswer === correctAnswer) {
+    // Apply correct answer styling
+    selectedLi.id = 'correct-answer';
+  } else {
+    // Apply incorrect answer styling
+    selectedLi.id = 'incorrect-answer';
+
+    // Find and highlight the correct answer
+    answerList.forEach(li => {
+      if (li.textContent === correctAnswer) {
+        li.id = 'correct-answer';
+      }
+    });
   }
-  
-  // Apply hover state style to the button matching the difficulty rating
-  if (difficultyRating) {
-    document.getElementById(`difficulty-button-${difficultyRating}`).classList.add('button-hover');
-  }    
 }
 
 // Function to mark the difficulty score and highlight the corresponding button
