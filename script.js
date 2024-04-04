@@ -130,6 +130,27 @@ function handleAnswerClick(selectedLi, selectedAnswer, correctAnswer) {
   }
 }
 
+// Reveal the correct answer (we'll use this for the spacebar user shortcut)
+function revealCorrectAnswer() {
+  // Retrieve the correct answer for the current question
+  const correctAnswer = triviaQuestions[currentQuestionIndex]['Correct'];
+  
+  // Find the LI element that contains the correct answer text
+  const answerListItems = document.querySelectorAll('.answer-choices li');
+  let correctLi;
+  answerListItems.forEach(li => {
+    if (li.textContent === correctAnswer) {
+      correctLi = li;
+    }
+  });
+
+  // Ensure we have the correct LI and it hasn't already been clicked
+  if (correctLi && !correctLi.classList.contains('disabled')) {
+    // Call handleAnswerClick as if the correct answer was clicked
+    handleAnswerClick(correctLi, correctAnswer, correctAnswer);
+  }
+}
+
 // Mark the difficulty score and highlight the corresponding button
 function markDifficulty(score) {
   const currentItem = triviaQuestions[currentQuestionIndex];
@@ -257,7 +278,12 @@ function handleKeydown(event) {
       // Call nextQuestion when the right arrow key is pressed
       nextQuestion();
       break;
-    // Add additional cases here if needed
+    case ' ': // This is the spacebar
+      // Prevent the default action to stop scrolling the page
+      event.preventDefault();
+      // Call revealCorrectAnswer when the spacebar is pressed
+      revealCorrectAnswer();
+      break;
   }
 }
 
