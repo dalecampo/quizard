@@ -2,7 +2,7 @@ let currentQuestionIndex = 0;
 let triviaQuestions = []; // This will be populated with the CSV content
 let csvOriginalFileName = 'Special_SXSW-Party_40.csv'
 
-// Function to parse the CSV file and extract necessary columns
+// Parse the CSV file and extract necessary columns
 function parseCSV(text) {
   const lines = text.split('\n');
   let headers = [];
@@ -36,7 +36,7 @@ function parseCSV(text) {
     .filter(row => Object.values(row).some(value => value.trim() !== '')); // Filter out empty rows
 }
 
-// Shuffle function to be used by parseCSV
+// Shuffle function to be used by parseCSV for answer choices
 function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -45,7 +45,7 @@ function shuffleArray(array) {
   return array;
 }
 
-// Function to load the CSV data
+// Load the CSV data
 function loadCSV() {
   fetch(`00_CSV Files/${csvOriginalFileName}`)
     .then(response => response.text())
@@ -59,6 +59,7 @@ function loadCSV() {
     .catch(error => console.error('Error loading CSV:', error));
 }
 
+// Displays each question and its answer choices
 function displayQuestion() {
   const questionElement = document.getElementById('question');
   const answerChoicesElement = document.getElementsByClassName('answer-choices')[0];
@@ -86,8 +87,22 @@ function displayQuestion() {
     li.addEventListener('click', () => handleAnswerClick(li, answer, correctAnswer));
     answerChoicesElement.appendChild(li);
   });
+
+  // Check if 'NewDiff' has a value for this question; otherwise, do not display a difficulty
+  const difficultyRating = currentItem['NewDiff'];
+
+  // Reset button styles for all difficulty buttons
+  for (let i = 1; i <= 5; i++) {
+    document.getElementById(`difficulty-button-${i}`).classList.remove('button-hover');
+  }
+  
+  // Apply hover state style to the button matching the NewDiff rating if it exists
+  if (difficultyRating) {
+    document.getElementById(`difficulty-button-${difficultyRating}`).classList.add('button-hover');
+  }   
 }
 
+// Style answer choices based on the user's guess.
 function handleAnswerClick(selectedLi, selectedAnswer, correctAnswer) {
   // Retrieve all the answer LIs
   const answerList = document.querySelectorAll('.answer-choices li');
@@ -115,21 +130,20 @@ function handleAnswerClick(selectedLi, selectedAnswer, correctAnswer) {
   }
 }
 
-// Function to mark the difficulty score and highlight the corresponding button
+// Mark the difficulty score and highlight the corresponding button
 function markDifficulty(score) {
   const currentItem = triviaQuestions[currentQuestionIndex];
   currentItem['NewDiff'] = score.toString(); // Save the user's input in the 'NewDiff' property
   highlightDifficultyButton(`difficulty-button-${score}`); // Highlight the button
-  //nextQuestion(); // Move to the next question after marking difficulty
   updateDifficultyCountDisplay();
 
   // Set a timeout to delay moving to the next question
   setTimeout(() => {
-    nextQuestion(); // Move to the next question after marking difficulty
-  }, 500); // Adjust the delay as needed (in milliseconds)
+    nextQuestion();
+  }, 500); // Delay (in milliseconds)
 }
 
-// Reusable function to apply hover state style to a button
+// Apply hover state style to a difficulty button
 function highlightDifficultyButton(buttonId) {
   // Reset button styles for all difficulty buttons
   for (let i = 1; i <= 5; i++) {
