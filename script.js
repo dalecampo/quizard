@@ -4,24 +4,45 @@ let csvOriginalFileName = 'Special_SXSW-Party_40.csv'
 
 // Function to parse the CSV file and extract necessary columns
 function parseCSV(text) {
-    const lines = text.split('\n');
-    let headers = [];
-    return lines.map((line, index) => {
-      if (index === 0) {
-        headers = line.split(',').map(cell => cell.trim());
-        return {}; // Just return an empty object for the header row
-      } else {
-        const cells = line.match(/(".*?"|[^",\r]+)(?=\s*,|\s*$)/g) || [];
-        const obj = {};
-        cells.forEach((cell, i) => {
-          obj[headers[i]] = cell.startsWith('"') && cell.endsWith('"')
-            ? cell.slice(1, -1).replace(/""/g, '"')
-            : cell;
-        });
-        return obj;
-      }
-    }).slice(1) // Remove headers
-      .filter(row => Object.values(row).some(value => value.trim() !== '')); // Filter out empty rows
+  const lines = text.split('\n');
+  let headers = [];
+  return lines.map((line, index) => {
+    if (index === 0) {
+      headers = line.split(',').map(cell => cell.trim());
+      return {}; // Just return an empty object for the header row
+    } else {
+      const cells = line.match(/(".*?"|[^",\r]+)(?=\s*,|\s*$)/g) || [];
+      const obj = {};
+      cells.forEach((cell, i) => {
+        obj[headers[i]] = cell.startsWith('"') && cell.endsWith('"')
+          ? cell.slice(1, -1).replace(/""/g, '"')
+          : cell;
+      });
+
+      // Randomize and store the order of answers only once here
+      // Assuming the headers are 'Correct', 'Wrong1', 'Wrong2', 'Wrong3'
+      const answers = [
+        obj['Correct'],
+        obj['Wrong1'],
+        obj['Wrong2'],
+        obj['Wrong3']
+      ];
+      // Shuffle the answers and store them
+      obj['RandomizedAnswers'] = shuffleArray(answers);
+
+      return obj;
+    }
+  }).slice(1) // Remove headers
+    .filter(row => Object.values(row).some(value => value.trim() !== '')); // Filter out empty rows
+}
+
+// Shuffle function to be used by parseCSV
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]]; // Swap elements
+  }
+  return array;
 }
 
 // Function to load the CSV data
@@ -46,11 +67,10 @@ function displayQuestion() {
   // Clear previous answer choices
   answerChoicesElement.innerHTML = '';
 
-  // Get the current question and answers
+  // Get the current question and its stored randomized answers
   const currentItem = triviaQuestions[currentQuestionIndex];
   const question = currentItem['Question'];
-  const correctAnswer = currentItem['Correct'];
-  const wrongAnswers = [currentItem['Wrong1'], currentItem['Wrong2'], currentItem['Wrong3']];
+  const randomizedAnswers = currentItem['RandomizedAnswers']; // Use the stored randomized answers
 
   // Set the question text
   questionElement.textContent = question;
@@ -58,19 +78,14 @@ function displayQuestion() {
   // Update the question count display
   questionCountElement.textContent = `${currentQuestionIndex + 1}/${triviaQuestions.length}`; // 1-based index for display
 
-  // Display the answer choices with the correct answer first
-  const answers = [correctAnswer, ...wrongAnswers];
-
-  // Create an element for the correct answer and apply a unique ID
-  const correctLi = document.createElement('li');
-  correctLi.textContent = correctAnswer;
-  correctLi.id = 'correct-answer'; // Assign this ID to let us style the correct answer differently
-  answerChoicesElement.appendChild(correctLi);
-
-  // Append the wrong answers
-  wrongAnswers.forEach(answer => {
+  // Display the stored randomized answer choices
+  randomizedAnswers.forEach(answer => {
     const li = document.createElement('li');
     li.textContent = answer;
+    // If the answer is the correct one, apply a unique ID for styling
+    if (answer === currentItem['Correct']) {
+      li.id = 'correct-answer';
+    }
     answerChoicesElement.appendChild(li);
   });
 
@@ -150,9 +165,10 @@ function nextQuestion() {
   }
 }
 
-// Convert the triviaQuestions array back to CSV format
+// Convert the triviaQuestions array back to CSV format, excluding 'RandomizedAnswers'
 function arrayToCSV(array) {
-  let headers = Object.keys(array[0]);
+  // Exclude the 'RandomizedAnswers' property from the headers
+  let headers = Object.keys(array[0]).filter(header => header !== 'RandomizedAnswers');
   
   // Check if 'NewDiff' column already exists in the data; if not, add it after 'Difficulty'
   const difficultyIndex = headers.indexOf('Difficulty');
@@ -167,12 +183,12 @@ function arrayToCSV(array) {
       headers.splice(difficultyIndex + 1, 0, 'NewDiff');
   }
   
-  const csvRows = array.map(row => 
-      headers.map(fieldName => {
-          let value = row[fieldName] || ''; // Handle undefined or null values
-          // Enclose in double quotes and escape internal quotes if necessary
-          return /[\n",]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
-      }).join(',')
+  const csvRows = array.map(row =>
+    headers.map(fieldName => {
+        let value = row[fieldName] || ''; // Handle undefined or null values
+        // Enclose in double quotes and escape internal quotes if necessary
+        return /[\n",]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
+    }).join(',')
   );
 
   csvRows.unshift(headers.join(',')); // Add header row
