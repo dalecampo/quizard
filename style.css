@@ -10,7 +10,6 @@ body {
     color: white;
     line-height: 1.6rem;
     margin: 0px;
-    /* padding: 20px; */
     overflow-x: hidden; /* Hide horizontal scrollbar */
 }
 
@@ -38,6 +37,38 @@ h1 {
     color: #00a3fb;
 }
 
+h2 {
+    color: white;
+    text-align: center;
+}
+
+#loginForm {
+    position: fixed;
+    top: 25%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 500px;
+    color: #00a3fb;
+    border-radius: 5px;
+    padding: 20px;
+    z-index: 1000;
+}
+
+#passwordSection, #nameSection, #beginSection, .error {
+    text-align: center;
+    margin-bottom: 18px;
+}
+
+#passwordSection input {
+    width: 80px;
+}
+
+.error {
+    color: #f34f19;
+    min-height: 30px;
+    display: block;
+}
+
 /* Main container */
 .main-container {
     width: 100%;
@@ -45,6 +76,7 @@ h1 {
     padding: 20px;
     border-radius: 10px;
     margin: auto;
+    display: none;
 }
 
 /* Question container */
@@ -94,7 +126,7 @@ h1 {
 
 /* Answer choice item */
 .answer-choices li {
-    width: 500px;
+    width: 450px;
     background-color: rgba(255, 255, 255, 0.1);
     margin-bottom: 10px;
     padding: 10px 15px;
@@ -128,7 +160,7 @@ h1 {
     opacity: 0.6;
 }
 
-.button {
+.button, #beginButton {
     display: inline-block;
     padding: 10px 20px;
     margin: 5px;
@@ -142,8 +174,15 @@ h1 {
     transition: background-color 0.3s ease;
 }
 
-.button:hover {
+.button:hover, #beginButton:hover {
     background-color: #008ad2;
+}
+
+#beginButton:hover {
+    background-color: #54c800;
+    color: black;
+    font-weight: 600;
+    opacity: 1;
 }
 
 .button-active {

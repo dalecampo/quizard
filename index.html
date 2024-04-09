@@ -16,6 +16,33 @@
                 <h1>Quizard</h1>
             </span>
         </header>
+
+        <!-- Modal Dialog -->
+        <div class="login-prompt">
+            <form id="loginForm">
+                <h2>Login</h2>
+
+                <div id="passwordSection">
+                    <label for="password">Password:</label>
+                    <input type="text" id="password" required>
+                </div>
+                
+                <div id="nameSection">
+                    <label for="firstName">First Name:</label>
+                    <input type="text" id="firstName" required>
+                    <br>
+                    <label for="lastName">Last Name:</label>
+                    <input type="text" id="lastName" required>
+                </div>
+                
+                <div id="beginSection">
+                    <button id="beginButton" type="submit">Begin</button>
+                </div>
+
+                <p id="errorMessage" class="error"></p>
+            </form>
+        </div>
+
         <div class="main-container">
 
             <!-- Question Container -->

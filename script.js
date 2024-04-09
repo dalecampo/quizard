@@ -1,5 +1,35 @@
 let currentQuestionIndex = 0;
 let triviaQuestions = []; // This will be populated with data from Google Sheets
+const correctPassword = "yes";
+let username = "";
+
+document.addEventListener("DOMContentLoaded", function() {
+  // Form submission event
+  document.getElementById("loginForm").addEventListener("submit", function(event) {
+    event.preventDefault(); // Prevent the form from submitting normally
+    
+    // Get the values from the input fields
+    const password = document.getElementById("password").value;
+    const firstName = document.getElementById("firstName").value;
+    const lastName = document.getElementById("lastName").value;
+    
+    // Validate the password and check if names are provided
+    if (password === correctPassword && firstName && lastName) {
+      // If valid, store the username and hide the login prompt
+      username = `${firstName} ${lastName}`;
+      
+      // Hide the login prompt
+      document.querySelector('.login-prompt').style.display = 'none';
+
+      // Show the main container
+      document.querySelector('.main-container').style.display = 'block';
+      
+    } else {
+      // If invalid, display an error message
+      document.getElementById("errorMessage").textContent = "Incorrect password or missing name.";
+    }
+  });
+});
 
 const sheetId = '13sHguyvUQotmwODNg5-kLKc-7xLxoHh2KmGeCF0jmTM'; // 'Quizard Qs' Sheet ID
 const apiKey = 'AIzaSyCr5NrPvps2_ln2PeEkLgyIwS-SoCCJ81o'; // Dale's Google Sheets API Key
