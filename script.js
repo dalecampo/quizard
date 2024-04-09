@@ -263,12 +263,56 @@ function revealCorrectAnswer() {
   }
 }
 
+// // Mark the difficulty score and highlight the corresponding button
+// function markDifficulty(score) {
+//   const currentItem = triviaQuestions[currentQuestionIndex];
+//   currentItem['NewDiff'] = score.toString(); // Save the user's input in the 'NewDiff' property
+//   highlightDifficultyButton(`difficulty-button-${score}`); // Highlight the button
+//   updateDifficultyCountDisplay();
+
+//   // Set a timeout to delay moving to the next question
+//   setTimeout(() => {
+//     nextQuestion();
+//   }, 500); // Delay (in milliseconds)
+// }
+
+// Helper function to update a specific cell in Google Sheets
+function updateSheetCell(sheetId, range, value, apiKey, accessToken) {
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?valueInputOption=USER_ENTERED&key=${apiKey}`;
+  const body = {
+    values: [[value]]
+  };
+
+  return fetch(url, {
+    method: 'PUT', // Use PUT to update cell data
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body)
+  })
+  .then(response => response.json());
+}
+
 // Mark the difficulty score and highlight the corresponding button
 function markDifficulty(score) {
   const currentItem = triviaQuestions[currentQuestionIndex];
-  currentItem['NewDiff'] = score.toString(); // Save the user's input in the 'NewDiff' property
+  const newDiffValue = score.toString(); // Convert the score to a string
+  currentItem['NewDiff'] = newDiffValue; // Save the user's input in the 'NewDiff' property
   highlightDifficultyButton(`difficulty-button-${score}`); // Highlight the button
   updateDifficultyCountDisplay();
+
+  // Assuming 'currentItemRange' is the A1 notation range of the NewDiff cell for the current question
+  const currentItemRange = `Q Ratings!F${currentItem.rowNumber + 1}`;
+  
+  // Update the cell in Google Sheets
+  updateSheetCell(sheetId, currentItemRange, newDiffValue, apiKey, accessToken)
+    .then(response => {
+      console.log('Cell updated:', response);
+    })
+    .catch(error => {
+      console.error('Error updating cell:', error);
+    });
 
   // Set a timeout to delay moving to the next question
   setTimeout(() => {

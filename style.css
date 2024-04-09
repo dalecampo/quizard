@@ -10,7 +10,7 @@ body {
     color: white;
     line-height: 1.6rem;
     margin: 0px;
-    padding: 20px;
+    /* padding: 20px; */
     overflow-x: hidden; /* Hide horizontal scrollbar */
 }
 
@@ -22,6 +22,7 @@ header span {
     display: flex;
     align-items: center;
     margin-bottom: 20px;
+    padding: 20px;
 }
 
 #wizard-icon {
