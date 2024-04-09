@@ -1,67 +1,3 @@
-// let currentQuestionIndex = 0;
-// let triviaQuestions = []; // This will be populated with the CSV content
-// let csvOriginalFileName = 'Special_SXSW-Party_40.csv'
-
-// // Parse the CSV file and extract necessary columns
-// function parseCSV(text) {
-//   const lines = text.split('\n');
-//   let headers = [];
-//   return lines.map((line, index) => {
-//     if (index === 0) {
-//       headers = line.split(',').map(cell => cell.trim());
-//       return {}; // Just return an empty object for the header row
-//     } else {
-//       const cells = line.match(/(".*?"|[^",\r]+)(?=\s*,|\s*$)/g) || [];
-//       const obj = {};
-//       cells.forEach((cell, i) => {
-//         obj[headers[i]] = cell.startsWith('"') && cell.endsWith('"')
-//           ? cell.slice(1, -1).replace(/""/g, '"')
-//           : cell;
-//       });
-
-//       // Randomize and store the order of answers only once here
-//       // Assuming the headers are 'Correct', 'Wrong1', 'Wrong2', 'Wrong3'
-//       const answers = [
-//         obj['Correct'],
-//         obj['Wrong1'],
-//         obj['Wrong2'],
-//         obj['Wrong3']
-//       ];
-//       // Shuffle the answers and store them
-//       obj['RandomizedAnswers'] = shuffleArray(answers);
-
-//       return obj;
-//     }
-//   }).slice(1) // Remove headers
-//     .filter(row => Object.values(row).some(value => value.trim() !== '')); // Filter out empty rows
-// }
-
-// // Shuffle function to be used by parseCSV for answer choices
-// function shuffleArray(array) {
-//   for (let i = array.length - 1; i > 0; i--) {
-//     const j = Math.floor(Math.random() * (i + 1));
-//     [array[i], array[j]] = [array[j], array[i]]; // Swap elements
-//   }
-//   return array;
-// }
-
-// // Load the CSV data
-// function loadCSV() {
-//   fetch(`00_CSV Files/${csvOriginalFileName}`)
-//     .then(response => response.text())
-//     .then(text => {
-//       triviaQuestions = parseCSV(text);
-//       displayQuestion();
-//       updateDifficultyCountDisplay();
-//       // Set up event listener for keyboard input
-//       document.addEventListener('keydown', handleKeydown);
-//     })
-//     .catch(error => console.error('Error loading CSV:', error));
-// }
-
-
-// API KEY METHOD
-
 let currentQuestionIndex = 0;
 let triviaQuestions = []; // This will be populated with data from Google Sheets
 
@@ -80,7 +16,7 @@ function getHeaderRow() {
 
 // Function to find the index of "Question" in the header row
 function findQuestionColumnIndex(headerRow) {
-    const columnIndex = headerRow.findIndex(header => header === "Question");
+    const columnIndex = headerRow.findIndex(header => header === "SourceQuestionId");
     return columnIndex + 1; // Convert to 1-based index for A1 notation
 }
 
@@ -128,11 +64,12 @@ function loadFromGoogleSheets() {
             if (index === 0) return null;
 
             const obj = {
-              'Question': row[0],
-              'Correct': row[1],
-              'Wrong1': row[2],
-              'Wrong2': row[3],
-              'Wrong3': row[4]
+              'SourceQuestionId': row[0],
+              'Question': row[1],
+              'Correct': row[2],
+              'Wrong1': row[3],
+              'Wrong2': row[4],
+              'Wrong3': row[5]
             };
 
             // Shuffle the answers and store them
@@ -263,61 +200,36 @@ function revealCorrectAnswer() {
   }
 }
 
-// // Mark the difficulty score and highlight the corresponding button
-// function markDifficulty(score) {
-//   const currentItem = triviaQuestions[currentQuestionIndex];
-//   currentItem['NewDiff'] = score.toString(); // Save the user's input in the 'NewDiff' property
-//   highlightDifficultyButton(`difficulty-button-${score}`); // Highlight the button
-//   updateDifficultyCountDisplay();
-
-//   // Set a timeout to delay moving to the next question
-//   setTimeout(() => {
-//     nextQuestion();
-//   }, 500); // Delay (in milliseconds)
-// }
-
-// Helper function to update a specific cell in Google Sheets
-function updateSheetCell(sheetId, range, value, apiKey, accessToken) {
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?valueInputOption=USER_ENTERED&key=${apiKey}`;
-  const body = {
-    values: [[value]]
-  };
-
-  return fetch(url, {
-    method: 'PUT', // Use PUT to update cell data
-    headers: {
-      'Authorization': `Bearer ${accessToken}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(body)
-  })
-  .then(response => response.json());
-}
-
 // Mark the difficulty score and highlight the corresponding button
 function markDifficulty(score) {
   const currentItem = triviaQuestions[currentQuestionIndex];
   const newDiffValue = score.toString(); // Convert the score to a string
+  const sourceQuestionIdValue = currentItem['SourceQuestionId'];
   currentItem['NewDiff'] = newDiffValue; // Save the user's input in the 'NewDiff' property
   highlightDifficultyButton(`difficulty-button-${score}`); // Highlight the button
   updateDifficultyCountDisplay();
 
-  // Assuming 'currentItemRange' is the A1 notation range of the NewDiff cell for the current question
-  const currentItemRange = `Q Ratings!F${currentItem.rowNumber + 1}`;
-  
-  // Update the cell in Google Sheets
-  updateSheetCell(sheetId, currentItemRange, newDiffValue, apiKey, accessToken)
-    .then(response => {
-      console.log('Cell updated:', response);
-    })
-    .catch(error => {
-      console.error('Error updating cell:', error);
-    });
+  // Send the difficulty rating to the Google Sheet using Apps Script Web App URL.
+  sendDifficultyToSheet(sourceQuestionIdValue, newDiffValue);
 
   // Set a timeout to delay moving to the next question
   setTimeout(() => {
     nextQuestion();
   }, 500); // Delay (in milliseconds)
+}
+
+function sendDifficultyToSheet(questionId, difficultyRating) {
+  fetch('https://script.google.com/macros/s/AKfycbwJwRFvNBjJbKIEcktT8HWpQmsXt9KUViEkXORPQ1VCIuW02XfPBMppWMjdg_oCcq9eRA/exec', {
+    method: 'POST',
+    contentType: 'application/json',
+    body: JSON.stringify({
+      questionId: questionId,
+      difficultyRating: difficultyRating
+    })
+  })
+  .then(response => response.json())
+  .then(data => console.log(data))
+  .catch(error => console.error('Error:', error));
 }
 
 // Apply hover state style to a difficulty button
@@ -367,52 +279,6 @@ function nextQuestion() {
     displayQuestion();
   }
 }
-
-// // Convert the triviaQuestions array back to CSV format, excluding 'RandomizedAnswers'
-// function arrayToCSV(array) {
-//   // Exclude the 'RandomizedAnswers' property from the headers
-//   let headers = Object.keys(array[0]).filter(header => header !== 'RandomizedAnswers');
-  
-//   // Check if 'NewDiff' column already exists in the data; if not, add it after 'Difficulty'
-//   const difficultyIndex = headers.indexOf('Difficulty');
-//   const newDiffIndex = headers.indexOf('NewDiff');
-  
-//   // If 'NewDiff' is not found in the array, we insert it right after 'Difficulty'
-//   if (newDiffIndex === -1 && difficultyIndex !== -1) {
-//       headers.splice(difficultyIndex + 1, 0, 'NewDiff');
-//   } else if (newDiffIndex > difficultyIndex + 1) {
-//       // 'NewDiff' exists but not in the right position; remove it and re-insert at correct place
-//       headers.splice(newDiffIndex, 1);
-//       headers.splice(difficultyIndex + 1, 0, 'NewDiff');
-//   }
-  
-//   const csvRows = array.map(row =>
-//     headers.map(fieldName => {
-//         let value = row[fieldName] || ''; // Handle undefined or null values
-//         // Enclose in double quotes and escape internal quotes if necessary
-//         return /[\n",]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
-//     }).join(',')
-//   );
-
-//   csvRows.unshift(headers.join(',')); // Add header row
-//   return csvRows.join('\r\n');
-// }
-
-// // Download the updated CSV
-// function downloadCSV() {
-//     const csvContent = arrayToCSV(triviaQuestions);
-//     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-//     const url = URL.createObjectURL(blob);
-//     const link = document.createElement('a');
-//     let newCSVFileName = csvOriginalFileName.replace('.csv', '');
-
-//     link.setAttribute('href', url);
-//     link.setAttribute('download', `${newCSVFileName} (Rated).csv`);
-//     link.style.visibility = 'hidden';
-//     document.body.appendChild(link);
-//     link.click();
-//     document.body.removeChild(link);
-// }
 
 // Handle keydown events for marking difficulty with keyboard keys 1-5
 // and navigating questions with left and right arrow keys.
