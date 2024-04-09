@@ -1,62 +1,130 @@
+// let currentQuestionIndex = 0;
+// let triviaQuestions = []; // This will be populated with the CSV content
+// let csvOriginalFileName = 'Special_SXSW-Party_40.csv'
+
+// // Parse the CSV file and extract necessary columns
+// function parseCSV(text) {
+//   const lines = text.split('\n');
+//   let headers = [];
+//   return lines.map((line, index) => {
+//     if (index === 0) {
+//       headers = line.split(',').map(cell => cell.trim());
+//       return {}; // Just return an empty object for the header row
+//     } else {
+//       const cells = line.match(/(".*?"|[^",\r]+)(?=\s*,|\s*$)/g) || [];
+//       const obj = {};
+//       cells.forEach((cell, i) => {
+//         obj[headers[i]] = cell.startsWith('"') && cell.endsWith('"')
+//           ? cell.slice(1, -1).replace(/""/g, '"')
+//           : cell;
+//       });
+
+//       // Randomize and store the order of answers only once here
+//       // Assuming the headers are 'Correct', 'Wrong1', 'Wrong2', 'Wrong3'
+//       const answers = [
+//         obj['Correct'],
+//         obj['Wrong1'],
+//         obj['Wrong2'],
+//         obj['Wrong3']
+//       ];
+//       // Shuffle the answers and store them
+//       obj['RandomizedAnswers'] = shuffleArray(answers);
+
+//       return obj;
+//     }
+//   }).slice(1) // Remove headers
+//     .filter(row => Object.values(row).some(value => value.trim() !== '')); // Filter out empty rows
+// }
+
+// // Shuffle function to be used by parseCSV for answer choices
+// function shuffleArray(array) {
+//   for (let i = array.length - 1; i > 0; i--) {
+//     const j = Math.floor(Math.random() * (i + 1));
+//     [array[i], array[j]] = [array[j], array[i]]; // Swap elements
+//   }
+//   return array;
+// }
+
+// // Load the CSV data
+// function loadCSV() {
+//   fetch(`00_CSV Files/${csvOriginalFileName}`)
+//     .then(response => response.text())
+//     .then(text => {
+//       triviaQuestions = parseCSV(text);
+//       displayQuestion();
+//       updateDifficultyCountDisplay();
+//       // Set up event listener for keyboard input
+//       document.addEventListener('keydown', handleKeydown);
+//     })
+//     .catch(error => console.error('Error loading CSV:', error));
+// }
+
+
+// API KEY METHOD
+
 let currentQuestionIndex = 0;
-let triviaQuestions = []; // This will be populated with the CSV content
-let csvOriginalFileName = 'Special_SXSW-Party_40.csv'
+let triviaQuestions = []; // This will be populated with data from Google Sheets
 
-// Parse the CSV file and extract necessary columns
-function parseCSV(text) {
-  const lines = text.split('\n');
-  let headers = [];
-  return lines.map((line, index) => {
-    if (index === 0) {
-      headers = line.split(',').map(cell => cell.trim());
-      return {}; // Just return an empty object for the header row
-    } else {
-      const cells = line.match(/(".*?"|[^",\r]+)(?=\s*,|\s*$)/g) || [];
-      const obj = {};
-      cells.forEach((cell, i) => {
-        obj[headers[i]] = cell.startsWith('"') && cell.endsWith('"')
-          ? cell.slice(1, -1).replace(/""/g, '"')
-          : cell;
-      });
+const sheetId = '13sHguyvUQotmwODNg5-kLKc-7xLxoHh2KmGeCF0jmTM'; // 'Quizard Qs' Sheet ID
+const apiKey = 'AIzaSyCr5NrPvps2_ln2PeEkLgyIwS-SoCCJ81o'; // Dale's Google Sheets API Key
+const sheetRange = 'Q Ratings!H1:L'; // Start with the Question column and continue to the right
 
-      // Randomize and store the order of answers only once here
-      // Assuming the headers are 'Correct', 'Wrong1', 'Wrong2', 'Wrong3'
-      const answers = [
-        obj['Correct'],
-        obj['Wrong1'],
-        obj['Wrong2'],
-        obj['Wrong3']
-      ];
-      // Shuffle the answers and store them
-      obj['RandomizedAnswers'] = shuffleArray(answers);
+// Load the data from Google Sheets
+function loadFromGoogleSheets() {
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(sheetRange)}?key=${apiKey}`;
 
-      return obj;
-    }
-  }).slice(1) // Remove headers
-    .filter(row => Object.values(row).some(value => value.trim() !== '')); // Filter out empty rows
+  fetch(url)
+    .then(response => response.json())
+    .then(data => {
+      // console.log(`Data: ${JSON.stringify(data, null, 2)}`);
+      const rows = data.values; // 'values' is the key that contains the array of rows
+      if (rows.length > 0) {
+        triviaQuestions = rows.map((row, index) => {
+          // Skip header row
+          if (index === 0) return {};
+
+          // Assume that the data range is ordered this way from left to right:
+          const obj = {
+            'Question': row[0],
+            'Correct': row[1],
+            'Wrong1': row[2],
+            'Wrong2': row[3],
+            'Wrong3': row[4]
+          };
+
+          // Randomize and store the order of answers only once here
+          const answers = [
+            obj['Correct'],
+            obj['Wrong1'],
+            obj['Wrong2'],
+            obj['Wrong3']
+          ];
+          // Shuffle the answers and store them
+          obj['RandomizedAnswers'] = shuffleArray(answers);
+
+          return obj;
+        }).slice(1) // Remove headers
+          .filter(row => Object.values(row).some(value => value && value.trim() !== '')); // Filter out empty rows
+
+        displayQuestion();
+        updateDifficultyCountDisplay();
+        // Set up event listener for keyboard input
+        document.addEventListener('keydown', handleKeydown);
+      } else {
+        console.log('No data found in Google Sheets.');
+      }
+    })
+    .catch(error => console.error('Error loading data from Google Sheets:', error));
 }
 
-// Shuffle function to be used by parseCSV for answer choices
+
+// Shuffle function to be used by loadFromGoogleSheets for answer choices
 function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [array[i], array[j]] = [array[j], array[i]]; // Swap elements
   }
   return array;
-}
-
-// Load the CSV data
-function loadCSV() {
-  fetch(`00_CSV Files/${csvOriginalFileName}`)
-    .then(response => response.text())
-    .then(text => {
-      triviaQuestions = parseCSV(text);
-      displayQuestion();
-      updateDifficultyCountDisplay();
-      // Set up event listener for keyboard input
-      document.addEventListener('keydown', handleKeydown);
-    })
-    .catch(error => console.error('Error loading CSV:', error));
 }
 
 // Displays each question and its answer choices
@@ -212,51 +280,51 @@ function nextQuestion() {
   }
 }
 
-// Convert the triviaQuestions array back to CSV format, excluding 'RandomizedAnswers'
-function arrayToCSV(array) {
-  // Exclude the 'RandomizedAnswers' property from the headers
-  let headers = Object.keys(array[0]).filter(header => header !== 'RandomizedAnswers');
+// // Convert the triviaQuestions array back to CSV format, excluding 'RandomizedAnswers'
+// function arrayToCSV(array) {
+//   // Exclude the 'RandomizedAnswers' property from the headers
+//   let headers = Object.keys(array[0]).filter(header => header !== 'RandomizedAnswers');
   
-  // Check if 'NewDiff' column already exists in the data; if not, add it after 'Difficulty'
-  const difficultyIndex = headers.indexOf('Difficulty');
-  const newDiffIndex = headers.indexOf('NewDiff');
+//   // Check if 'NewDiff' column already exists in the data; if not, add it after 'Difficulty'
+//   const difficultyIndex = headers.indexOf('Difficulty');
+//   const newDiffIndex = headers.indexOf('NewDiff');
   
-  // If 'NewDiff' is not found in the array, we insert it right after 'Difficulty'
-  if (newDiffIndex === -1 && difficultyIndex !== -1) {
-      headers.splice(difficultyIndex + 1, 0, 'NewDiff');
-  } else if (newDiffIndex > difficultyIndex + 1) {
-      // 'NewDiff' exists but not in the right position; remove it and re-insert at correct place
-      headers.splice(newDiffIndex, 1);
-      headers.splice(difficultyIndex + 1, 0, 'NewDiff');
-  }
+//   // If 'NewDiff' is not found in the array, we insert it right after 'Difficulty'
+//   if (newDiffIndex === -1 && difficultyIndex !== -1) {
+//       headers.splice(difficultyIndex + 1, 0, 'NewDiff');
+//   } else if (newDiffIndex > difficultyIndex + 1) {
+//       // 'NewDiff' exists but not in the right position; remove it and re-insert at correct place
+//       headers.splice(newDiffIndex, 1);
+//       headers.splice(difficultyIndex + 1, 0, 'NewDiff');
+//   }
   
-  const csvRows = array.map(row =>
-    headers.map(fieldName => {
-        let value = row[fieldName] || ''; // Handle undefined or null values
-        // Enclose in double quotes and escape internal quotes if necessary
-        return /[\n",]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
-    }).join(',')
-  );
+//   const csvRows = array.map(row =>
+//     headers.map(fieldName => {
+//         let value = row[fieldName] || ''; // Handle undefined or null values
+//         // Enclose in double quotes and escape internal quotes if necessary
+//         return /[\n",]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
+//     }).join(',')
+//   );
 
-  csvRows.unshift(headers.join(',')); // Add header row
-  return csvRows.join('\r\n');
-}
+//   csvRows.unshift(headers.join(',')); // Add header row
+//   return csvRows.join('\r\n');
+// }
 
-// Download the updated CSV
-function downloadCSV() {
-    const csvContent = arrayToCSV(triviaQuestions);
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    let newCSVFileName = csvOriginalFileName.replace('.csv', '');
+// // Download the updated CSV
+// function downloadCSV() {
+//     const csvContent = arrayToCSV(triviaQuestions);
+//     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+//     const url = URL.createObjectURL(blob);
+//     const link = document.createElement('a');
+//     let newCSVFileName = csvOriginalFileName.replace('.csv', '');
 
-    link.setAttribute('href', url);
-    link.setAttribute('download', `${newCSVFileName} (Rated).csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-}
+//     link.setAttribute('href', url);
+//     link.setAttribute('download', `${newCSVFileName} (Rated).csv`);
+//     link.style.visibility = 'hidden';
+//     document.body.appendChild(link);
+//     link.click();
+//     document.body.removeChild(link);
+// }
 
 // Handle keydown events for marking difficulty with keyboard keys 1-5
 // and navigating questions with left and right arrow keys.
@@ -302,11 +370,11 @@ function setupEventListeners() {
   // Other event listeners...
   document.getElementById('prev').addEventListener('click', previousQuestion);
   document.getElementById('next').addEventListener('click', nextQuestion);
-  document.getElementById('submit').addEventListener('click', downloadCSV);
+  // document.getElementById('submit').addEventListener('click', downloadCSV);
 }
   
-// Call loadCSV and set up event listeners when the page loads
+// Call loadFromGoogleSheets and set up event listeners when the page loads.
 window.onload = function() {
-  loadCSV();
+  loadFromGoogleSheets();
   setupEventListeners();
 };
