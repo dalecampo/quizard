@@ -67,56 +67,100 @@ let triviaQuestions = []; // This will be populated with data from Google Sheets
 
 const sheetId = '13sHguyvUQotmwODNg5-kLKc-7xLxoHh2KmGeCF0jmTM'; // 'Quizard Qs' Sheet ID
 const apiKey = 'AIzaSyCr5NrPvps2_ln2PeEkLgyIwS-SoCCJ81o'; // Dale's Google Sheets API Key
-const sheetRange = 'Q Ratings!H1:L'; // Start with the Question column and continue to the right
+const headerRange = 'Q Ratings!1:1'; // Adjust the sheet name as needed
+
+// Function to retrieve the header row
+function getHeaderRow() {
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${headerRange}?key=${apiKey}`;
+
+    return fetch(url)
+        .then(response => response.json())
+        .then(data => data.values[0]); // Assuming the first row is the header row
+}
+
+// Function to find the index of "Question" in the header row
+function findQuestionColumnIndex(headerRow) {
+    const columnIndex = headerRow.findIndex(header => header === "Question");
+    return columnIndex + 1; // Convert to 1-based index for A1 notation
+}
+
+// Function to convert a column index to its corresponding column letter(s)
+function columnToLetter(columnIndex) {
+    let letter = '', temp;
+    while (columnIndex > 0) {
+        temp = (columnIndex - 1) % 26;
+        letter = String.fromCharCode(temp + 65) + letter;
+        columnIndex = (columnIndex - temp - 1) / 26;
+    }
+    return letter;
+}
+
+// Function to build the range string based on the column index of "Question" and the last column
+function buildRangeString(questionColumnIndex, lastColumnIndex) {
+  const startColumn = columnToLetter(questionColumnIndex);
+  const endColumn = columnToLetter(lastColumnIndex);
+  return `Q Ratings!${startColumn}1:${endColumn}`; // Range from the "Question" column to the last column
+}
+
+// Main function to fetch the dynamic range based on the "Question" column
+function fetchDynamicRange() {
+return getHeaderRow().then(headerRow => {
+  const questionColumnIndex = findQuestionColumnIndex(headerRow);
+  const lastColumnIndex = headerRow.length; // The last column index is the count of headers
+  const dynamicRange = buildRangeString(questionColumnIndex, lastColumnIndex);
+  return dynamicRange;
+});
+}
 
 // Load the data from Google Sheets
 function loadFromGoogleSheets() {
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(sheetRange)}?key=${apiKey}`;
+  fetchDynamicRange().then(sheetRange => {
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${sheetRange}?key=${apiKey}`;
+    // console.log(`url: ${url}`);
 
-  fetch(url)
-    .then(response => response.json())
-    .then(data => {
-      // console.log(`Data: ${JSON.stringify(data, null, 2)}`);
-      const rows = data.values; // 'values' is the key that contains the array of rows
-      if (rows.length > 0) {
-        triviaQuestions = rows.map((row, index) => {
-          // Skip header row
-          if (index === 0) return {};
+    fetch(url)
+      .then(response => response.json())
+      .then(data => {
+        const rows = data.values;
+        if (rows && rows.length > 0) {
+          triviaQuestions = rows.map((row, index) => {
+            // Skip header row by starting mapping at index 1
+            if (index === 0) return null;
 
-          // Assume that the data range is ordered this way from left to right:
-          const obj = {
-            'Question': row[0],
-            'Correct': row[1],
-            'Wrong1': row[2],
-            'Wrong2': row[3],
-            'Wrong3': row[4]
-          };
+            const obj = {
+              'Question': row[0],
+              'Correct': row[1],
+              'Wrong1': row[2],
+              'Wrong2': row[3],
+              'Wrong3': row[4]
+            };
 
-          // Randomize and store the order of answers only once here
-          const answers = [
-            obj['Correct'],
-            obj['Wrong1'],
-            obj['Wrong2'],
-            obj['Wrong3']
-          ];
-          // Shuffle the answers and store them
-          obj['RandomizedAnswers'] = shuffleArray(answers);
+            // Shuffle the answers and store them
+            obj['RandomizedAnswers'] = shuffleArray([
+              obj['Correct'],
+              obj['Wrong1'],
+              obj['Wrong2'],
+              obj['Wrong3']
+            ]);
 
-          return obj;
-        }).slice(1) // Remove headers
-          .filter(row => Object.values(row).some(value => value && value.trim() !== '')); // Filter out empty rows
+            return obj;
+          }).filter(Boolean); // Filter out nulls (which represent the header row)
 
-        displayQuestion();
-        updateDifficultyCountDisplay();
-        // Set up event listener for keyboard input
-        document.addEventListener('keydown', handleKeydown);
-      } else {
-        console.log('No data found in Google Sheets.');
-      }
-    })
-    .catch(error => console.error('Error loading data from Google Sheets:', error));
+          // Additional functions that handle the trivia questions
+          displayQuestion();
+          updateDifficultyCountDisplay();
+          document.addEventListener('keydown', handleKeydown);
+        } else {
+          console.log('No data found in Google Sheets.');
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching sheet data:', error);
+      });
+  }).catch(error => {
+    console.error('Error finding dynamic range:', error);
+  });
 }
-
 
 // Shuffle function to be used by loadFromGoogleSheets for answer choices
 function shuffleArray(array) {
