@@ -2,6 +2,7 @@ let currentQuestionIndex = 0;
 let triviaQuestions = []; // This will be populated with data from Google Sheets
 const correctPassword = "yes";
 let username = "";
+let validLogin = false;
 
 document.addEventListener("DOMContentLoaded", function() {
   // Form submission event
@@ -23,6 +24,9 @@ document.addEventListener("DOMContentLoaded", function() {
 
       // Show the main container
       document.querySelector('.main-container').style.display = 'block';
+
+      // Enable hotkey inputs. Before this, they are siabled to prevent accidental hotkey inputs.
+      validLogin = true;
       
     } else {
       // If invalid, display an error message
@@ -313,29 +317,31 @@ function nextQuestion() {
 // Handle keydown events for marking difficulty with keyboard keys 1-5
 // and navigating questions with left and right arrow keys.
 function handleKeydown(event) {
-  switch (event.key) {
-    case '1':
-    case '2':
-    case '3':
-    case '4':
-    case '5':
-      // Call markDifficulty with the corresponding number
-      markDifficulty(parseInt(event.key));
-      break;
-    case 'ArrowLeft':
-      // Call previousQuestion when the left arrow key is pressed
-      previousQuestion();
-      break;
-    case 'ArrowRight':
-      // Call nextQuestion when the right arrow key is pressed
-      nextQuestion();
-      break;
-    case ' ': // This is the spacebar
-      // Prevent the default action to stop scrolling the page
-      event.preventDefault();
-      // Call revealCorrectAnswer when the spacebar is pressed
-      revealCorrectAnswer();
-      break;
+  if (validLogin === true) {
+    switch (event.key) {
+      case '1':
+      case '2':
+      case '3':
+      case '4':
+      case '5':
+        // Call markDifficulty with the corresponding number
+        markDifficulty(parseInt(event.key));
+        break;
+      case 'ArrowLeft':
+        // Call previousQuestion when the left arrow key is pressed
+        previousQuestion();
+        break;
+      case 'ArrowRight':
+        // Call nextQuestion when the right arrow key is pressed
+        nextQuestion();
+        break;
+      case ' ': // This is the spacebar
+        // Prevent the default action to stop scrolling the page
+        event.preventDefault();
+        // Call revealCorrectAnswer when the spacebar is pressed
+        revealCorrectAnswer();
+        break;
+    }
   }
 }
 
