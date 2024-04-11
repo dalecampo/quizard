@@ -17,7 +17,13 @@
             </span>
         </header>
 
-        <!-- Modal Dialog -->
+        <script type="module" src="script.js" defer></script>
+        <script async defer src="https://apis.google.com/js/api.js"></script>
+        <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+        <div id="googleSignInButton"></div>
+
+        <!-- Login Section -->
         <div class="login-prompt">
             <form id="loginForm">
                 <h2>Login</h2>
@@ -89,18 +95,13 @@
                 <p id="difficulty-count">0/10</p>
             </div>
 
-            <!-- <div class="download-button">
-                <button class="button" id="submit">Download New CSV</button>
-            </div> -->
-
         </div>
 
         <footer>
             <a href="https://www.flaticon.com/free-icons/wizard" title="wizard icons">Wizard icons created by Flat Icons - Flaticon</a>
         </footer>
-        <script src="script.js"></script>
         <script>
-            let adminMode = false;
+            let adminMode = true;
             
             if (!adminMode) {
                 window.addEventListener('beforeunload', function (e) {

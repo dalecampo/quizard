@@ -42,9 +42,17 @@ h2 {
     text-align: center;
 }
 
+#googleSignInButton {
+    text-align: center;
+    margin: auto;
+    display: flex;
+    justify-content: center;
+}
+
 #loginForm {
+    display: none;
     position: fixed;
-    top: 25%;
+    top: 35%;
     left: 50%;
     transform: translate(-50%, -50%);
     width: 500px;
@@ -63,13 +71,17 @@ h2 {
     width: 80px;
 }
 
+#authorize-button-section {
+    text-align: center;
+    margin-top: -18px;
+}
+
 .error {
     color: #f34f19;
     min-height: 30px;
     display: block;
 }
 
-/* Main container */
 .main-container {
     width: 100%;
     max-width: 800px;
@@ -77,14 +89,14 @@ h2 {
     border-radius: 10px;
     margin: auto;
     display: none;
+    opacity: 0;
+    transition: opacity 1s ease-in-out 0.5s;
 }
 
-/* Question container */
 .question-container {
     margin-bottom: 30px;
 }
 
-/* Question text */
 #question {
     font-size: 1.25rem;
     font-weight: 600;
@@ -101,7 +113,7 @@ h2 {
     text-overflow: ellipsis;
     white-space: normal;
     max-height: 3em; /* Based on line-height, this should allow for 2 lines */
-    line-height: 1.5em; /* Adjust line height as needed */
+    line-height: 1.5em;
 }
 
 #check-icon {
@@ -118,13 +130,11 @@ h2 {
     padding: 0px 100px;
 }
 
-/* Answer choices list */
 .answer-choices {
     list-style: none;
     padding: 0px 0px 0px 10px;
 }
 
-/* Answer choice item */
 .answer-choices li {
     width: 450px;
     background-color: rgba(255, 255, 255, 0.1);
@@ -134,12 +144,6 @@ h2 {
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
-
-/*
-.answer-choices li:hover {
-    background-color: rgba(255, 255, 255, 0.2);
-}
-*/
 
 #correct-answer {
     background-color: #54c800;
@@ -160,7 +164,7 @@ h2 {
     opacity: 0.6;
 }
 
-.button, #beginButton {
+.button, #beginButton, #authorize-button {
     display: inline-block;
     padding: 10px 20px;
     margin: 5px;
@@ -174,11 +178,11 @@ h2 {
     transition: background-color 0.3s ease;
 }
 
-.button:hover, #beginButton:hover {
+.button:hover {
     background-color: #008ad2;
 }
 
-#beginButton:hover {
+#beginButton:hover, #authorize-button:hover {
     background-color: #54c800;
     color: black;
     font-weight: 600;
@@ -215,7 +219,6 @@ h2 {
     margin-top: 0px;
 }
 
-/* Difficulty selection */
 .difficulty-selection {
     white-space: nowrap;
     margin-bottom: 40px;
@@ -227,7 +230,6 @@ h2 {
     padding: 0px 5px;
 }
 
-/* Difficulty button */
 .difficulty-button {
     font-weight: 800;
     padding: 8px 10px;
@@ -249,7 +251,6 @@ h2 {
     text-align: center;
 }
 
-/* Navigation buttons */
 .navigation-buttons {
     text-align: center;
     white-space: nowrap;
@@ -260,12 +261,6 @@ h2 {
     margin-top: 20px;
     text-align: center;
     color: #00a3fb;
-}
-
-/* Download button */
-.download-button {
-    text-align: center;
-    margin-top: 40px;
 }
 
 #submit {

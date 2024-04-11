@@ -1,45 +1,139 @@
+import CONFIG from './config/config.js';
+
+const CLIENT_ID = CONFIG.CLIENT_ID;
+const DEPLOYMENT_ID = CONFIG.DEPLOYMENT_ID;
+const apiKey = CONFIG.API_KEY;
+
 let currentQuestionIndex = 0;
-let triviaQuestions = []; // This will be populated with data from Google Sheets
-const correctPassword = "yes";
+let triviaQuestions = []; // This will be populated with question data from Google Sheets.
 let username = "";
 let validLogin = false;
+
+// Set this to the login password.
+const correctPassword = "yes";
+
+///////////////////////////
+// Google Login Handling //
+///////////////////////////
+
+// Ensure the DOM is fully loaded before initializing
+window.onload = initGoogleIdentityServices();
+
+// Function to initialize the Google Identity Services library
+function initGoogleIdentityServices() {
+  google.accounts.id.initialize({
+    client_id: CLIENT_ID,
+    callback: updateUIAfterSignIn,
+    auto_select: true // Optional: Automatically select an account if the user is signed in
+  });
+
+  // Render the Google sign-in button
+  google.accounts.id.renderButton(
+    document.getElementById('googleSignInButton'),
+    { theme: 'outline', size: 'large' } // Customization options for the button
+  );
+
+  // Display the One Tap prompt
+  google.accounts.id.prompt();
+}
+
+// Function to update the UI after a successful sign-in
+function updateUIAfterSignIn() {
+  // Hide the Google login button after successfully logging in, then display the Login section.
+  document.getElementById('googleSignInButton').style.display = 'none';
+  document.getElementById('loginForm').style.display = 'block';
+}
+
+////////////////////////////////
+// Apps Script Function Calls //
+////////////////////////////////
+
+function sendDifficultyToSheet(questionId, difficultyRating, username) {
+  fetch(`https://script.google.com/macros/s/${DEPLOYMENT_ID}/exec`, {
+    method: 'POST',
+    mode: 'no-cors', // Required because Google Apps Script doesn't handle CORS
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      action: 'updateDifficulty',
+      questionId: questionId,
+      difficultyRating: difficultyRating,
+      username: username
+    })
+  })
+  .catch(error => console.error('Error:', error));
+}
+
+function insertNewColumnWithUsername(username) {
+  fetch(`https://script.google.com/macros/s/${DEPLOYMENT_ID}/exec`, {
+    method: 'POST',
+    mode: 'no-cors', // Required because Google Apps Script doesn't handle CORS
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      action: 'insertColumn',
+      username: username
+    })
+  })
+  .catch(error => console.error('Error:', error));
+}
+
+///////////////////////////
+// Login Form Submission //
+///////////////////////////
 
 document.addEventListener("DOMContentLoaded", function() {
   // Form submission event
   document.getElementById("loginForm").addEventListener("submit", function(event) {
-    event.preventDefault(); // Prevent the form from submitting normally
+    event.preventDefault(); // Prevent the form from submitting normally.
     
-    // Get the values from the input fields
+    // Get the values from the input fields.
     const password = document.getElementById("password").value;
     const firstName = document.getElementById("firstName").value;
     const lastName = document.getElementById("lastName").value;
     
-    // Validate the password and check if names are provided
+    // Validate the password and check if names are provided.
     if (password === correctPassword && firstName && lastName) {
       // If valid, store the username and hide the login prompt
-      username = `${firstName} ${lastName}`;
+      username = `${firstName}.${lastName}`.toLowerCase();
+      console.log(`username: ${username}`);
+
+      // Create a new NewDiff column in the Google Sheet.
+      insertNewColumnWithUsername(username);
       
-      // Hide the login prompt
+      // Display sheet data (trivia questions) and set us hotkey access.
+      loadFromGoogleSheets();
+      setupEventListeners();
+
+      // Hide the login prompt.
       document.querySelector('.login-prompt').style.display = 'none';
 
-      // Show the main container
-      document.querySelector('.main-container').style.display = 'block';
+      // Show the main container (question + answer choices).
+      let mainContainer = document.querySelector('.main-container');
+      mainContainer.style.display = 'block';
+      mainContainer.offsetWidth;
+      mainContainer.style.opacity = '1';
 
-      // Enable hotkey inputs. Before this, they are siabled to prevent accidental hotkey inputs.
+      // Enable hotkey inputs. Before this, they are disabled to prevent accidental hotkey inputs.
       validLogin = true;
       
     } else {
-      // If invalid, display an error message
+      // If invalid login, display an error message.
       document.getElementById("errorMessage").textContent = "Incorrect password or missing name.";
     }
   });
 });
 
+//////////////////////////
+// Google Sheet Loading //
+//////////////////////////
+
 const sheetId = '13sHguyvUQotmwODNg5-kLKc-7xLxoHh2KmGeCF0jmTM'; // 'Quizard Qs' Sheet ID
-const apiKey = 'AIzaSyCr5NrPvps2_ln2PeEkLgyIwS-SoCCJ81o'; // Dale's Google Sheets API Key
 const headerRange = 'Q Ratings!1:1'; // Adjust the sheet name as needed
 
-// Function to retrieve the header row
+// Retrieve the header row.
 function getHeaderRow() {
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${headerRange}?key=${apiKey}`;
 
@@ -48,13 +142,13 @@ function getHeaderRow() {
         .then(data => data.values[0]); // Assuming the first row is the header row
 }
 
-// Function to find the index of "Question" in the header row
+// Find the index of "Question" in the header row.
 function findQuestionColumnIndex(headerRow) {
     const columnIndex = headerRow.findIndex(header => header === "SourceQuestionId");
     return columnIndex + 1; // Convert to 1-based index for A1 notation
 }
 
-// Function to convert a column index to its corresponding column letter(s)
+// Convert a column index to its corresponding column letter(s).
 function columnToLetter(columnIndex) {
     let letter = '', temp;
     while (columnIndex > 0) {
@@ -65,14 +159,14 @@ function columnToLetter(columnIndex) {
     return letter;
 }
 
-// Function to build the range string based on the column index of "Question" and the last column
+// Build the range string based on the column index of "Question" and the last column.
 function buildRangeString(questionColumnIndex, lastColumnIndex) {
   const startColumn = columnToLetter(questionColumnIndex);
   const endColumn = columnToLetter(lastColumnIndex);
   return `Q Ratings!${startColumn}1:${endColumn}`; // Range from the "Question" column to the last column
 }
 
-// Main function to fetch the dynamic range based on the "Question" column
+// Fetch the dynamic range based on the "Question" column.
 function fetchDynamicRange() {
 return getHeaderRow().then(headerRow => {
   const questionColumnIndex = findQuestionColumnIndex(headerRow);
@@ -82,11 +176,11 @@ return getHeaderRow().then(headerRow => {
 });
 }
 
-// Load the data from Google Sheets
+// Load the data from Google Sheets.
 function loadFromGoogleSheets() {
   fetchDynamicRange().then(sheetRange => {
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${sheetRange}?key=${apiKey}`;
-    // console.log(`url: ${url}`);
+    console.log(`url: ${url}`);
 
     fetch(url)
       .then(response => response.json())
@@ -115,7 +209,7 @@ function loadFromGoogleSheets() {
             ]);
 
             return obj;
-          }).filter(Boolean); // Filter out nulls (which represent the header row)
+          }).filter(Boolean); // Filter out nulls (which represent the header row).
 
           // Additional functions that handle the trivia questions
           displayQuestion();
@@ -142,28 +236,32 @@ function shuffleArray(array) {
   return array;
 }
 
-// Displays each question and its answer choices
+////////////////////
+// Display Each Q //
+////////////////////
+
+// Display each question and its answer choices.
 function displayQuestion() {
   const questionElement = document.getElementById('question');
   const answerChoicesElement = document.getElementsByClassName('answer-choices')[0];
   const questionCountElement = document.getElementById('question-count');
 
-  // Clear previous answer choices
+  // Clear previous answer choices.
   answerChoicesElement.innerHTML = '';
 
-  // Get the current question and its stored randomized answers
+  // Get the current question and its stored randomized answers.
   const currentItem = triviaQuestions[currentQuestionIndex];
   const question = currentItem['Question'];
   const correctAnswer = currentItem['Correct'];
   const randomizedAnswers = currentItem['RandomizedAnswers'];
 
-  // Set the question text
+  // Set the question text.
   questionElement.textContent = question;
 
-  // Update the question count display
+  // Update the question count display.
   questionCountElement.textContent = `${currentQuestionIndex + 1}/${triviaQuestions.length}`;
 
-  // Display the stored randomized answer choices
+  // Display the stored randomized answer choices.
   randomizedAnswers.forEach(answer => {
     const li = document.createElement('li');
     li.textContent = answer;
@@ -171,26 +269,30 @@ function displayQuestion() {
     answerChoicesElement.appendChild(li);
   });
 
-  // Check if 'NewDiff' has a value for this question; otherwise, do not display a difficulty
-  const difficultyRating = currentItem['NewDiff'];
+  // Check if `NewDiff (${username})`' has a value for this question; otherwise, do not display a difficulty.
+  const difficultyRating = currentItem[`NewDiff (${username})`];
 
   // Reset button styles for all difficulty buttons
   for (let i = 1; i <= 5; i++) {
     document.getElementById(`difficulty-button-${i}`).classList.remove('button-hover');
   }
   
-  // Apply hover state style to the button matching the NewDiff rating if it exists
+  // Apply hover state style to the button matching the NewDiff rating if it exists.
   if (difficultyRating) {
     document.getElementById(`difficulty-button-${difficultyRating}`).classList.add('button-hover');
   }   
 }
 
+//////////////////////////
+// Handle Q Interaction //
+//////////////////////////
+
 // Style answer choices based on the user's guess.
 function handleAnswerClick(selectedLi, selectedAnswer, correctAnswer) {
-  // Retrieve all the answer LIs
+  // Retrieve all the answer list items.
   const answerList = document.querySelectorAll('.answer-choices li');
 
-  // Disable further clicks on answers and remove event listeners
+  // Disable further clicks on answers and remove event listeners.
   answerList.forEach(li => {
     li.removeEventListener('click', handleAnswerClick);
     li.classList.add('disabled');
@@ -198,13 +300,13 @@ function handleAnswerClick(selectedLi, selectedAnswer, correctAnswer) {
 
   // Check if the selected answer is correct
   if (selectedAnswer === correctAnswer) {
-    // Apply correct answer styling
+    // Apply correct answer styling.
     selectedLi.id = 'correct-answer';
   } else {
-    // Apply incorrect answer styling
+    // Apply incorrect answer styling.
     selectedLi.id = 'incorrect-answer';
 
-    // Find and highlight the correct answer
+    // Find and highlight the correct answer.
     answerList.forEach(li => {
       if (li.textContent === correctAnswer) {
         li.id = 'correct-answer';
@@ -213,12 +315,12 @@ function handleAnswerClick(selectedLi, selectedAnswer, correctAnswer) {
   }
 }
 
-// Reveal the correct answer (we'll use this for the spacebar user shortcut)
+// Reveal the correct answer (we'll use this for the spacebar user shortcut).
 function revealCorrectAnswer() {
-  // Retrieve the correct answer for the current question
+  // Retrieve the correct answer for the current question.
   const correctAnswer = triviaQuestions[currentQuestionIndex]['Correct'];
   
-  // Find the LI element that contains the correct answer text
+  // Find the <li> element that contains the correct answer text.
   const answerListItems = document.querySelectorAll('.answer-choices li');
   let correctLi;
   answerListItems.forEach(li => {
@@ -227,69 +329,59 @@ function revealCorrectAnswer() {
     }
   });
 
-  // Ensure we have the correct LI and it hasn't already been clicked
+  // Ensure that we have the correct <li> and it hasn't already been clicked.
   if (correctLi && !correctLi.classList.contains('disabled')) {
-    // Call handleAnswerClick as if the correct answer was clicked
+    // Call handleAnswerClick as if the correct answer was clicked.
     handleAnswerClick(correctLi, correctAnswer, correctAnswer);
   }
 }
 
-// Mark the difficulty score and highlight the corresponding button
+///////////////////////////////////
+// Handle Difficulty Interaction //
+///////////////////////////////////
+
+// Mark the difficulty score and highlight the corresponding button.
 function markDifficulty(score) {
   const currentItem = triviaQuestions[currentQuestionIndex];
-  const newDiffValue = score.toString(); // Convert the score to a string
+  const newDiffValue = score.toString(); // Convert the score to a string.
   const sourceQuestionIdValue = currentItem['SourceQuestionId'];
-  currentItem['NewDiff'] = newDiffValue; // Save the user's input in the 'NewDiff' property
-  highlightDifficultyButton(`difficulty-button-${score}`); // Highlight the button
+  currentItem[`NewDiff (${username})`] = newDiffValue; // Save the user's input in the 'NewDiff' property.
+  highlightDifficultyButton(`difficulty-button-${score}`); // Highlight the button.
   updateDifficultyCountDisplay();
 
-  // Send the difficulty rating to the Google Sheet using Apps Script Web App URL.
-  sendDifficultyToSheet(sourceQuestionIdValue, newDiffValue);
+  // Send the difficulty rating to the Google Sheet using the Apps Script Web App.
+  sendDifficultyToSheet(sourceQuestionIdValue, newDiffValue, username);
 
-  // Set a timeout to delay moving to the next question
+  // Set a timeout to delay moving to the next question.
   setTimeout(() => {
     nextQuestion();
   }, 500); // Delay (in milliseconds)
 }
 
-function sendDifficultyToSheet(questionId, difficultyRating) {
-  fetch('https://script.google.com/macros/s/AKfycbwJwRFvNBjJbKIEcktT8HWpQmsXt9KUViEkXORPQ1VCIuW02XfPBMppWMjdg_oCcq9eRA/exec', {
-    method: 'POST',
-    contentType: 'application/json',
-    body: JSON.stringify({
-      questionId: questionId,
-      difficultyRating: difficultyRating
-    })
-  })
-  .then(response => response.json())
-  .then(data => console.log(data))
-  .catch(error => console.error('Error:', error));
-}
-
-// Apply hover state style to a difficulty button
+// Apply hover state style to a difficulty button.
 function highlightDifficultyButton(buttonId) {
-  // Reset button styles for all difficulty buttons
+  // Reset button styles for all difficulty buttons.
   for (let i = 1; i <= 5; i++) {
     document.getElementById(`difficulty-button-${i}`).classList.remove('button-hover');
   }
   
-  // Apply hover state style to the specified button
+  // Apply hover state style to the specified button.
   document.getElementById(buttonId).classList.add('button-hover');
 }
 
-// Count the number of non-empty values in the 'NewDiff' column
+// Count the number of non-empty values in the 'NewDiff' column.
 function countMarkedDifficulties() {
   let count = 0;
   triviaQuestions.forEach(function(question) {
     // Check if 'NewDiff' exists and is not empty
-    if (question['NewDiff']) {
+    if (question[`NewDiff (${username})`]) {
       count++;
     }
   });
   return count;
 }
 
-// Update the display of the count on the webpage
+// Update the display of the count on the webpage.
 function updateDifficultyCountDisplay() {
   const count = countMarkedDifficulties();
   const countElement = document.getElementById('difficulty-count');
@@ -298,7 +390,11 @@ function updateDifficultyCountDisplay() {
   }
 }
 
-// Move to the previous question
+///////////////////
+// Q Transitions //
+///////////////////
+
+// Move to the previous question.
 function previousQuestion() {
   if (currentQuestionIndex > 0) {
     currentQuestionIndex -= 1;
@@ -306,13 +402,17 @@ function previousQuestion() {
   }
 }
 
-// Move to the next question
+// Move to the next question.
 function nextQuestion() {
   if (currentQuestionIndex < triviaQuestions.length - 1) {
     currentQuestionIndex += 1;
     displayQuestion();
   }
 }
+
+///////////////////////////////
+// Hotkeys & Event Listeners //
+///////////////////////////////
 
 // Handle keydown events for marking difficulty with keyboard keys 1-5
 // and navigating questions with left and right arrow keys.
@@ -324,47 +424,38 @@ function handleKeydown(event) {
       case '3':
       case '4':
       case '5':
-        // Call markDifficulty with the corresponding number
+        // Call markDifficulty with the corresponding number.
         markDifficulty(parseInt(event.key));
         break;
-      case 'ArrowLeft':
-        // Call previousQuestion when the left arrow key is pressed
+      case 'ArrowLeft': // Left Arrow
         previousQuestion();
         break;
-      case 'ArrowRight':
-        // Call nextQuestion when the right arrow key is pressed
+      case 'ArrowRight': // Right Arrow
         nextQuestion();
         break;
-      case ' ': // This is the spacebar
-        // Prevent the default action to stop scrolling the page
+      case ' ': // Spacebar
+        // Prevent the default action to stop scrolling the page.
         event.preventDefault();
-        // Call revealCorrectAnswer when the spacebar is pressed
+        // Call revealCorrectAnswer when the spacebar is pressed.
         revealCorrectAnswer();
         break;
     }
   }
 }
 
-// Set up event listeners
+// Set up event listeners.
 function setupEventListeners() {
-  // Add click event listeners to the difficulty buttons
+  // Add click event listeners to the difficulty buttons.
   for (let i = 1; i <= 5; i++) {
     document.getElementById(`difficulty-button-${i}`).addEventListener('click', function() {
       markDifficulty(i);
     });
   }
 
-  // Add keydown event listener to the document
+  // Add keydown event listener to the document.
   document.addEventListener('keydown', handleKeydown);
   
   // Other event listeners...
   document.getElementById('prev').addEventListener('click', previousQuestion);
   document.getElementById('next').addEventListener('click', nextQuestion);
-  // document.getElementById('submit').addEventListener('click', downloadCSV);
 }
-  
-// Call loadFromGoogleSheets and set up event listeners when the page loads.
-window.onload = function() {
-  loadFromGoogleSheets();
-  setupEventListeners();
-};
