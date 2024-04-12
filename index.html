@@ -49,6 +49,7 @@
             </form>
         </div>
 
+        <!-- Main Q Section -->
         <div class="main-container">
 
             <!-- Question Container -->
@@ -79,6 +80,7 @@
                 <label class="difficulty-label">Hard</label>
             </div>
 
+            <!-- Question Count -->
             <div class="question-count-section">
                 <label id="question-count-label">Question</label>
                 <p id="question-count">1/10</p>
@@ -90,6 +92,7 @@
                 <button class="button" id="next">Next</button>
             </div>
 
+            <!-- Rated Count -->
             <div id="total-rated">
                 <label id="question-count-label">Rated</label>
                 <p id="difficulty-count">0/10</p>
@@ -101,7 +104,7 @@
             <a href="https://www.flaticon.com/free-icons/wizard" title="wizard icons">Wizard icons created by Flat Icons - Flaticon</a>
         </footer>
         <script>
-            let adminMode = true;
+            let adminMode = false;
             
             if (!adminMode) {
                 window.addEventListener('beforeunload', function (e) {

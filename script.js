@@ -2,15 +2,14 @@ import CONFIG from './config/config.js';
 
 const CLIENT_ID = CONFIG.CLIENT_ID;
 const DEPLOYMENT_ID = CONFIG.DEPLOYMENT_ID;
-const apiKey = CONFIG.API_KEY;
+const API_KEY = CONFIG.API_KEY;
+const CORRECT_PASSWORD = CONFIG.CORRECT_PASSWORD;
+const SHEET_ID = CONFIG.SHEET_ID;
 
 let currentQuestionIndex = 0;
 let triviaQuestions = []; // This will be populated with question data from Google Sheets.
 let username = "";
 let validLogin = false;
-
-// Set this to the login password.
-const correctPassword = "yes";
 
 ///////////////////////////
 // Google Login Handling //
@@ -95,10 +94,10 @@ document.addEventListener("DOMContentLoaded", function() {
     const lastName = document.getElementById("lastName").value;
     
     // Validate the password and check if names are provided.
-    if (password === correctPassword && firstName && lastName) {
+    if (password === CORRECT_PASSWORD && firstName && lastName) {
       // If valid, store the username and hide the login prompt
       username = `${firstName}.${lastName}`.toLowerCase();
-      console.log(`username: ${username}`);
+      // console.log(`username: ${username}`);
 
       // Create a new NewDiff column in the Google Sheet.
       insertNewColumnWithUsername(username);
@@ -130,12 +129,11 @@ document.addEventListener("DOMContentLoaded", function() {
 // Google Sheet Loading //
 //////////////////////////
 
-const sheetId = '13sHguyvUQotmwODNg5-kLKc-7xLxoHh2KmGeCF0jmTM'; // 'Quizard Qs' Sheet ID
 const headerRange = 'Q Ratings!1:1'; // Adjust the sheet name as needed
 
 // Retrieve the header row.
 function getHeaderRow() {
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${headerRange}?key=${apiKey}`;
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${headerRange}?key=${API_KEY}`;
 
     return fetch(url)
         .then(response => response.json())
@@ -179,8 +177,8 @@ return getHeaderRow().then(headerRow => {
 // Load the data from Google Sheets.
 function loadFromGoogleSheets() {
   fetchDynamicRange().then(sheetRange => {
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${sheetRange}?key=${apiKey}`;
-    console.log(`url: ${url}`);
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${sheetRange}?key=${API_KEY}`;
+    // console.log(`url: ${url}`);
 
     fetch(url)
       .then(response => response.json())
@@ -216,7 +214,7 @@ function loadFromGoogleSheets() {
           updateDifficultyCountDisplay();
           document.addEventListener('keydown', handleKeydown);
         } else {
-          console.log('No data found in Google Sheets.');
+          console.log('No data found in the Google Sheet.');
         }
       })
       .catch(error => {
