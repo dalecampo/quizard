@@ -1,0 +1,12 @@
+{
+    "name": "quizard",
+    "version": "1.0.0",
+    "description": "A difficulty-rating tool for Chive Trivia questions.",
+    "main": "script.js",
+    "scripts": {
+        "start:local": "dotenv -e .env node script.js",
+        "heroku-postbuild": "npm run build"
+    },
+    "author": "Dale Campo",
+    "license": "Apache License 2.0"
+}

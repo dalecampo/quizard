@@ -1,3 +1,4 @@
 # .gitignore content
 /config/service-account-key.json
 config.js
+.env
