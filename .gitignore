@@ -2,3 +2,4 @@
 /config/service-account-key.json
 config.js
 .env
+node_modules

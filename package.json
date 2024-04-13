@@ -9,5 +9,9 @@
         "heroku-postbuild": "npm run build"
     },
     "author": "Dale Campo",
-    "license": "Apache License 2.0"
+    "license": "Apache License 2.0",
+    "dependencies": {
+        "dotenv": "^16.4.5",
+        "express": "^4.19.2"
+    }
 }
