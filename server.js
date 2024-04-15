@@ -1,6 +1,6 @@
 import cors from 'cors';
 import express from 'express';
-import fs from 'fs';
+// import fs from 'fs';
 
 const app = express();
 const port = process.env.PORT || 5500;
@@ -36,6 +36,10 @@ app.get('/api/credentials', (req, res) => {
         correctPassword,
         sheetId,
     });
+});
+
+app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
 });
 
 // app.get('/script.js', (req, res) => {
@@ -78,7 +82,3 @@ app.get('/api/credentials', (req, res) => {
 //         res.send(scriptWithEnvVariables);
 //     });
 // });
-
-app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
-});
