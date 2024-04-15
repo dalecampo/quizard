@@ -1,1 +1,1 @@
-web: npm run start:local
+web: npm start
