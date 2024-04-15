@@ -1,9 +1,9 @@
 // Declare the variables as placeholders
-let clientId = 'CLIENT_ID';
-let deploymentId = 'DEPLOYMENT_ID';
-let apiKey = 'API_KEY';
-let correctPassword = 'CORRECT_PASSWORD';
-let sheetId = 'SHEET_ID';
+let CLIENT_ID = 'CLIENT_ID_PLACEHOLDER';
+let DEPLOYMENT_ID = 'DEPLOYMENT_ID_PLACEHOLDER';
+let API_KEY = 'API_KEY_PLACEHOLDER';
+let CORRECT_PASSWORD = 'CORRECT_PASSWORD_PLACEHOLDER';
+let SHEET_ID = 'SHEET_ID_PLACEHOLDER';
 
 let currentQuestionIndex = 0;
 let triviaQuestions = []; // This will be populated with question data from Google Sheets.
