@@ -1,25 +1,5 @@
-// import express from 'express';
-
-// const app = express();
-// const port = process.env.PORT || 3000;
-
-// app.get('/script.js', (req, res) => {
-//     const apiKey = process.env.API_KEY;
-//     const script = `const apiKey = '${apiKey}';`;
-
-//     res.type('application/javascript');
-//     res.send(script);
-// });
-
-// app.listen(port, () => {
-//     console.log(`Server running on port ${port}`);
-// });
-
 import express from 'express';
-import dotenv from 'dotenv';
 import fs from 'fs';
-
-dotenv.config(); // Load environment variables from .env file
 
 const app = express();
 const port = process.env.PORT || 3000;
