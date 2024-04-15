@@ -3,6 +3,7 @@
     "version": "1.0.0",
     "description": "A difficulty-rating tool for Chive Trivia questions.",
     "main": "script.js",
+    "type": "module",
     "scripts": {
         "start": "node server.js",
         "build": "echo 'Build complete'",
