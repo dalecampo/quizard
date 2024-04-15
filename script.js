@@ -1,9 +1,18 @@
-// Declare the variables as placeholders
-let CLIENT_ID = 'CLIENT_ID_PLACEHOLDER';
-let DEPLOYMENT_ID = 'DEPLOYMENT_ID_PLACEHOLDER';
-let API_KEY = 'API_KEY_PLACEHOLDER';
-let CORRECT_PASSWORD = 'CORRECT_PASSWORD_PLACEHOLDER';
-let SHEET_ID = 'SHEET_ID_PLACEHOLDER';
+let clientId, deploymentId, apiKey, correctPassword, sheetId;
+
+fetch('/api/credentials')
+  .then((response) => response.json())
+  .then((data) => {
+    clientId = data.clientId;
+    deploymentId = data.deploymentId;
+    apiKey = data.apiKey;
+    correctPassword = data.correctPassword;
+    sheetId = data.sheetId;
+
+    // Ensure the DOM is fully loaded before initializing
+    window.onload = initGoogleIdentityServices();
+  })
+  .catch((error) => console.error(error));
 
 let currentQuestionIndex = 0;
 let triviaQuestions = []; // This will be populated with question data from Google Sheets.
@@ -14,13 +23,10 @@ let validLogin = false;
 // Google Login Handling //
 ///////////////////////////
 
-// Ensure the DOM is fully loaded before initializing
-window.onload = initGoogleIdentityServices();
-
 // Function to initialize the Google Identity Services library
 function initGoogleIdentityServices() {
   google.accounts.id.initialize({
-    client_id: CLIENT_ID,
+    client_id: clientId,
     callback: updateUIAfterSignIn,
     auto_select: true // Optional: Automatically select an account if the user is signed in
   });
@@ -47,7 +53,7 @@ function updateUIAfterSignIn() {
 ////////////////////////////////
 
 function sendDifficultyToSheet(questionId, difficultyRating, username) {
-  fetch(`https://script.google.com/macros/s/${DEPLOYMENT_ID}/exec`, {
+  fetch(`https://script.google.com/macros/s/${deploymentId}/exec`, {
     method: 'POST',
     mode: 'no-cors', // Required because Google Apps Script doesn't handle CORS
     headers: {
@@ -64,7 +70,7 @@ function sendDifficultyToSheet(questionId, difficultyRating, username) {
 }
 
 function insertNewColumnWithUsername(username) {
-  fetch(`https://script.google.com/macros/s/${DEPLOYMENT_ID}/exec`, {
+  fetch(`https://script.google.com/macros/s/${deploymentId}/exec`, {
     method: 'POST',
     mode: 'no-cors', // Required because Google Apps Script doesn't handle CORS
     headers: {
@@ -93,7 +99,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const lastName = document.getElementById("lastName").value;
     
     // Validate the password and check if names are provided.
-    if (password === CORRECT_PASSWORD && firstName && lastName) {
+    if (password === correctPassword && firstName && lastName) {
       // If valid, store the username and hide the login prompt
       username = `${firstName}.${lastName}`.toLowerCase();
       // console.log(`username: ${username}`);
@@ -132,7 +138,7 @@ const headerRange = 'Q Ratings!1:1'; // Adjust the sheet name as needed
 
 // Retrieve the header row.
 function getHeaderRow() {
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${headerRange}?key=${API_KEY}`;
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${headerRange}?key=${apiKey}`;
 
     return fetch(url)
         .then(response => response.json())
@@ -176,7 +182,7 @@ return getHeaderRow().then(headerRow => {
 // Load the data from Google Sheets.
 function loadFromGoogleSheets() {
   fetchDynamicRange().then(sheetRange => {
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${sheetRange}?key=${API_KEY}`;
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${sheetRange}?key=${apiKey}`;
     // console.log(`url: ${url}`);
 
     fetch(url)
