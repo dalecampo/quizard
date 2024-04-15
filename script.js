@@ -4,6 +4,13 @@
 // const CORRECT_PASSWORD = process.env.CORRECT_PASSWORD;
 // const SHEET_ID = process.env.SHEET_ID;
 
+// Declare the variables as placeholders
+let clientId = 'CLIENT_ID';
+let deploymentId = 'DEPLOYMENT_ID';
+let apiKey = 'API_KEY';
+let correctPassword = 'CORRECT_PASSWORD';
+let sheetId = 'SHEET_ID';
+
 let currentQuestionIndex = 0;
 let triviaQuestions = []; // This will be populated with question data from Google Sheets.
 let username = "";

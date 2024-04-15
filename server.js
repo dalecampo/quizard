@@ -33,26 +33,54 @@ app.get('/script.js', (req, res) => {
             return res.status(500).send('Internal Server Error');
         }
     
-        const scriptWithEnvVariables = data.replace(
-            /const\s+API_KEY\s+=\s+'.*?';/,
-            "const apiKey = '" + apiKey + "';"
+        let scriptWithEnvVariables = data;
+        scriptWithEnvVariables = scriptWithEnvVariables.replace(
+            'CLIENT_ID',
+            clientId
         ).replace(
-            /const\s+CLIENT_ID\s+=\s+'.*?';/,
-            "const clientId = '" + clientId + "';"
+            'DEPLOYMENT_ID',
+            deploymentId
         ).replace(
-            /const\s+DEPLOYMENT_ID\s+=\s+'.*?';/,
-            "const deploymentId = '" + deploymentId + "';"
+            'API_KEY',
+            apiKey
         ).replace(
-            /const\s+CORRECT_PASSWORD\s+=\s+'.*?';/,
-            "const correctPassword = '" + correctPassword + "';"
+            'CORRECT_PASSWORD',
+            correctPassword
         ).replace(
-            /const\s+SHEET_ID\s+=\s+'.*?';/,
-            "const sheetId = '" + sheetId + "';"
+            'SHEET_ID',
+            sheetId
         );
     
         res.type('application/javascript');
         res.send(scriptWithEnvVariables);
     });
+
+    // fs.readFile('./script.js', 'utf8', (err, data) => {
+    //     if (err) {
+    //         console.error(err);
+    //         return res.status(500).send('Internal Server Error');
+    //     }
+    
+    //     const scriptWithEnvVariables = data.replace(
+    //         /const\s+API_KEY\s+=\s+'.*?';/,
+    //         "const apiKey = '" + apiKey + "';"
+    //     ).replace(
+    //         /const\s+CLIENT_ID\s+=\s+'.*?';/,
+    //         "const clientId = '" + clientId + "';"
+    //     ).replace(
+    //         /const\s+DEPLOYMENT_ID\s+=\s+'.*?';/,
+    //         "const deploymentId = '" + deploymentId + "';"
+    //     ).replace(
+    //         /const\s+CORRECT_PASSWORD\s+=\s+'.*?';/,
+    //         "const correctPassword = '" + correctPassword + "';"
+    //     ).replace(
+    //         /const\s+SHEET_ID\s+=\s+'.*?';/,
+    //         "const sheetId = '" + sheetId + "';"
+    //     );
+    
+    //     res.type('application/javascript');
+    //     res.send(scriptWithEnvVariables);
+    // });
 
     // fs.readFile('./script.js', 'utf8', (err, data) => {
     //     if (err) {
