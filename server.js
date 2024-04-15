@@ -32,27 +32,54 @@ app.get('/script.js', (req, res) => {
             console.error(err);
             return res.status(500).send('Internal Server Error');
         }
-
+    
         const scriptWithEnvVariables = data.replace(
             /const\s+API_KEY\s+=\s+'.*?';/,
-            `const apiKey = '${apiKey}';`
+            "const apiKey = '" + apiKey + "';"
         ).replace(
             /const\s+CLIENT_ID\s+=\s+'.*?';/,
-            `const clientId = '${clientId}';`
+            "const clientId = '" + clientId + "';"
         ).replace(
             /const\s+DEPLOYMENT_ID\s+=\s+'.*?';/,
-            `const deploymentId = '${deploymentId}';`
+            "const deploymentId = '" + deploymentId + "';"
         ).replace(
             /const\s+CORRECT_PASSWORD\s+=\s+'.*?';/,
-            `const correctPassword = '${correctPassword}';`
+            "const correctPassword = '" + correctPassword + "';"
         ).replace(
             /const\s+SHEET_ID\s+=\s+'.*?';/,
-            `const sheetId = '${sheetId}';`
+            "const sheetId = '" + sheetId + "';"
         );
-
+    
         res.type('application/javascript');
         res.send(scriptWithEnvVariables);
     });
+
+    // fs.readFile('./script.js', 'utf8', (err, data) => {
+    //     if (err) {
+    //         console.error(err);
+    //         return res.status(500).send('Internal Server Error');
+    //     }
+
+    //     const scriptWithEnvVariables = data.replace(
+    //         /const\s+API_KEY\s+=\s+'.*?';/,
+    //         `const apiKey = '${apiKey}';`
+    //     ).replace(
+    //         /const\s+CLIENT_ID\s+=\s+'.*?';/,
+    //         `const clientId = '${clientId}';`
+    //     ).replace(
+    //         /const\s+DEPLOYMENT_ID\s+=\s+'.*?';/,
+    //         `const deploymentId = '${deploymentId}';`
+    //     ).replace(
+    //         /const\s+CORRECT_PASSWORD\s+=\s+'.*?';/,
+    //         `const correctPassword = '${correctPassword}';`
+    //     ).replace(
+    //         /const\s+SHEET_ID\s+=\s+'.*?';/,
+    //         `const sheetId = '${sheetId}';`
+    //     );
+
+    //     res.type('application/javascript');
+    //     res.send(scriptWithEnvVariables);
+    // });
 });
 
 app.listen(port, () => {
