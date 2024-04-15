@@ -23,6 +23,11 @@ app.get('/api/credentials', (req, res) => {
     const correctPassword = process.env.CORRECT_PASSWORD;
     const sheetId = process.env.SHEET_ID;
 
+    // Set CORS headers for the response
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
     // Return the sensitive values as a JSON response
     res.json({
         clientId,
