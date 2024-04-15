@@ -1,8 +1,19 @@
+import cors from 'cors';
 import express from 'express';
 import fs from 'fs';
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 5500;
+
+app.use(cors());
+
+// Enable CORS middleware
+app.use((req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    next();
+});
 
 app.get('/script.js', (req, res) => {
     const apiKey = process.env.API_KEY;
@@ -10,6 +21,11 @@ app.get('/script.js', (req, res) => {
     const deploymentId = process.env.DEPLOYMENT_ID;
     const correctPassword = process.env.CORRECT_PASSWORD;
     const sheetId = process.env.SHEET_ID;
+
+    // Set CORS headers for the response
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
     fs.readFile('./script.js', 'utf8', (err, data) => {
         if (err) {
