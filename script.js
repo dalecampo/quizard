@@ -1,9 +1,3 @@
-// const CLIENT_ID = process.env.CLIENT_ID;
-// const DEPLOYMENT_ID = process.env.DEPLOYMENT_ID;
-// const API_KEY = process.env.API_KEY;
-// const CORRECT_PASSWORD = process.env.CORRECT_PASSWORD;
-// const SHEET_ID = process.env.SHEET_ID;
-
 // Declare the variables as placeholders
 let clientId = 'CLIENT_ID';
 let deploymentId = 'DEPLOYMENT_ID';
