@@ -1,6 +1,6 @@
 let clientId, deploymentId, apiKey, correctPassword, sheetId;
 
-fetch('/api/credentials')
+fetch('https://quizardapp-ae1181cd277d.herokuapp.com/api/credentials')
   .then((response) => response.json())
   .then((data) => {
     clientId = data.clientId;
