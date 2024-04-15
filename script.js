@@ -1,8 +1,8 @@
-const CLIENT_ID = process.env.CLIENT_ID;
-const DEPLOYMENT_ID = process.env.DEPLOYMENT_ID;
-const API_KEY = process.env.API_KEY;
-const CORRECT_PASSWORD = process.env.CORRECT_PASSWORD;
-const SHEET_ID = process.env.SHEET_ID;
+// const CLIENT_ID = process.env.CLIENT_ID;
+// const DEPLOYMENT_ID = process.env.DEPLOYMENT_ID;
+// const API_KEY = process.env.API_KEY;
+// const CORRECT_PASSWORD = process.env.CORRECT_PASSWORD;
+// const SHEET_ID = process.env.SHEET_ID;
 
 let currentQuestionIndex = 0;
 let triviaQuestions = []; // This will be populated with question data from Google Sheets.
