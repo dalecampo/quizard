@@ -54,7 +54,7 @@
 
             <!-- Question Container -->
             <div class="question-container">
-                <div class="truncate-multiline" id="question">Is this an example question?</div>
+                <p class="truncate-multiline" id="question">Is this an example question?</p>
                 <div class="answer-choice-container">
                     <div id="check-icon">
                         <img src="01_Images/Check Icon.svg" alt="Check Icon"/>
@@ -101,16 +101,17 @@
         </div>
 
         <footer>
-            <a href="https://www.flaticon.com/free-icons/wizard" title="wizard icons">Wizard icons created by Flat Icons - Flaticon</a>
+            <a href="https://www.flaticon.com/free-icons/wizard" title="wizard icons" target="_blank">Wizard icons created by Flat Icons - Flaticon</a>
         </footer>
         <script>
             let adminMode = false;
             
             if (!adminMode) {
                 window.addEventListener('beforeunload', function (e) {
-                var confirmationMessage = 'Leaving this page will lose progress. Are you sure?';
+                var confirmationMessage = 'Your selections are saved as you go. When you return, just pick back up where you left off!';
 
                 // For modern browsers, setting returnValue on the event will trigger the confirmation
+                e.preventDefault();
                 e.returnValue = confirmationMessage;
 
                 // For some older browsers, returning the confirmation message is necessary

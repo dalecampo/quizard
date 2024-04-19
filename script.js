@@ -1,5 +1,14 @@
-let clientId, deploymentId, apiKey, correctPassword, sheetId;
+// Set this to true for an easy admin login. When deployed, switch to false.
+let testingMode = false;
 
+let clientId, deploymentId, apiKey, correctPassword, sheetId;
+let currentQuestionIndex = 0;
+let triviaQuestions = []; // This will be populated with question data from Google Sheets.
+let username = "";
+let validLogin = false;
+let admin = false;
+
+// Reference Heroku config vars to use with Quizard.
 fetch('https://quizardapp-ae1181cd277d.herokuapp.com/api/credentials')
   .then((response) => response.json())
   .then((data) => {
@@ -13,11 +22,6 @@ fetch('https://quizardapp-ae1181cd277d.herokuapp.com/api/credentials')
     window.onload = initGoogleIdentityServices();
   })
   .catch((error) => console.error(error));
-
-let currentQuestionIndex = 0;
-let triviaQuestions = []; // This will be populated with question data from Google Sheets.
-let username = "";
-let validLogin = false;
 
 ///////////////////////////
 // Google Login Handling //
@@ -45,6 +49,14 @@ function initGoogleIdentityServices() {
 function updateUIAfterSignIn() {
   // Hide the Google login button after successfully logging in, then display the Login section.
   document.getElementById('googleSignInButton').style.display = 'none';
+
+  // If testing code, preset all login values.
+  if (testingMode) {
+    document.getElementById("password").value = correctPassword;
+    document.getElementById("firstName").value = "Dale";
+    document.getElementById("lastName").value = "Admin";
+  }
+
   document.getElementById('loginForm').style.display = 'block';
 }
 
@@ -92,7 +104,7 @@ document.addEventListener("DOMContentLoaded", function() {
   // Form submission event
   document.getElementById("loginForm").addEventListener("submit", function(event) {
     event.preventDefault(); // Prevent the form from submitting normally.
-    
+
     // Get the values from the input fields.
     const password = document.getElementById("password").value;
     const firstName = document.getElementById("firstName").value;
@@ -102,11 +114,16 @@ document.addEventListener("DOMContentLoaded", function() {
     if (password === correctPassword && firstName && lastName) {
       // If valid, store the username and hide the login prompt
       username = `${firstName}.${lastName}`.toLowerCase();
-      // console.log(`username: ${username}`);
+      
+      if (lastName.toLowerCase() === "admin") {
+        admin = true;
+        // Set up admin mode Q display settings.
+        adminModeSetup();
+      }
 
       // Create a new NewDiff column in the Google Sheet.
       insertNewColumnWithUsername(username);
-      
+
       // Display sheet data (trivia questions) and set us hotkey access.
       loadFromGoogleSheets();
       setupEventListeners();
@@ -243,9 +260,22 @@ function shuffleArray(array) {
 // Display Each Q //
 ////////////////////
 
+function adminModeSetup() {
+  if (admin) {
+    questionElement = document.getElementById('question');
+    questionElement.id = 'question-admin';
+  }
+}
+
 // Display each question and its answer choices.
 function displayQuestion() {
-  const questionElement = document.getElementById('question');
+  if (admin) {
+    questionElement = document.getElementById('question-admin');
+  } else {
+    // If you're a regular user...
+    questionElement = document.getElementById('question');
+  }
+  
   const answerChoicesElement = document.getElementsByClassName('answer-choices')[0];
   const questionCountElement = document.getElementById('question-count');
 
@@ -258,8 +288,14 @@ function displayQuestion() {
   const correctAnswer = currentItem['Correct'];
   const randomizedAnswers = currentItem['RandomizedAnswers'];
 
-  // Set the question text.
-  questionElement.textContent = question;
+
+  if (admin) {
+    // Make the question text an editable text field.
+    convertQuestionToTextField(questionElement, question);
+  } else {
+    // Set the question text.
+    questionElement.textContent = question;
+  }
 
   // Update the question count display.
   questionCountElement.textContent = `${currentQuestionIndex + 1}/${triviaQuestions.length}`;
@@ -284,6 +320,21 @@ function displayQuestion() {
   if (difficultyRating) {
     document.getElementById(`difficulty-button-${difficultyRating}`).classList.add('button-hover');
   }   
+}
+
+function convertQuestionToTextField(questionElement, question) {
+  // Create an input element.
+  var inputElement = document.createElement('input');
+  inputElement.type = 'text';
+  inputElement.classList.add('truncate-multiline');
+  inputElement.id = 'question-admin';
+  inputElement.value = question;
+
+  // Replace the question element with the input element.
+  questionElement.parentNode.replaceChild(inputElement, questionElement);
+
+  // Focus on the input element
+  inputElement.focus();
 }
 
 //////////////////////////

@@ -105,13 +105,28 @@ h2 {
     height: 60px;
 }
 
+#question-admin {
+    display: block;
+    white-space: pre-wrap;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: white;
+    background-color: transparent;
+    border: 2px solid green;
+    border-radius: 5px;
+    width: 565px;
+    height: 120px;
+    margin: auto;
+    padding: 4px 12px;
+}
+
 .truncate-multiline {
     display: -webkit-box;
     -webkit-line-clamp: 2; /* Number of lines you want to display */
     -webkit-box-orient: vertical;  
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: normal;
+    text-overflow: unset;
     max-height: 3em; /* Based on line-height, this should allow for 2 lines */
     line-height: 1.5em;
 }
