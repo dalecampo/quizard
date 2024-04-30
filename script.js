@@ -4,6 +4,7 @@ let testingMode = false;
 let clientId, deploymentId, apiKey, correctPassword, sheetId;
 let currentQuestionIndex = 0;
 let triviaQuestions = []; // This will be populated with question data from Google Sheets.
+let filteredTriviaQuestions = []; // This will contain questions data for Qs that have been rated <10 times.
 let username = "";
 let validLogin = false;
 let admin = false;
@@ -151,100 +152,170 @@ document.addEventListener("DOMContentLoaded", function() {
 // Google Sheet Loading //
 //////////////////////////
 
-const headerRange = 'Q Ratings!1:1'; // Adjust the sheet name as needed
+const tabName = 'Q Ratings';
+const headerRange = `${tabName}!1:1`; // Adjust the sheet name as needed
 
 // Retrieve the header row.
 function getHeaderRow() {
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${headerRange}?key=${apiKey}`;
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${headerRange}?key=${apiKey}`;
 
-    return fetch(url)
-        .then(response => response.json())
-        .then(data => data.values[0]); // Assuming the first row is the header row
+  return fetch(url)
+      .then(response => response.json())
+      .then(data => data.values[0]); // Assuming the first row is the header row
 }
 
 // Find the index of "Question" in the header row.
-function findQuestionColumnIndex(headerRow) {
-    const columnIndex = headerRow.findIndex(header => header === "SourceQuestionId");
-    return columnIndex + 1; // Convert to 1-based index for A1 notation
+function findColumnIndex(headerRow, columnHeaderText) {
+  const columnIndex = headerRow.findIndex(header => header === columnHeaderText);
+  return columnIndex + 1; // Convert to 1-based index for A1 notation
 }
 
 // Convert a column index to its corresponding column letter(s).
 function columnToLetter(columnIndex) {
-    let letter = '', temp;
-    while (columnIndex > 0) {
-        temp = (columnIndex - 1) % 26;
-        letter = String.fromCharCode(temp + 65) + letter;
-        columnIndex = (columnIndex - temp - 1) / 26;
-    }
-    return letter;
+  let letter = '', temp;
+  while (columnIndex > 0) {
+      temp = (columnIndex - 1) % 26;
+      letter = String.fromCharCode(temp + 65) + letter;
+      columnIndex = (columnIndex - temp - 1) / 26;
+  }
+  return letter;
 }
 
 // Build the range string based on the column index of "Question" and the last column.
 function buildRangeString(questionColumnIndex, lastColumnIndex) {
   const startColumn = columnToLetter(questionColumnIndex);
   const endColumn = columnToLetter(lastColumnIndex);
-  return `Q Ratings!${startColumn}1:${endColumn}`; // Range from the "Question" column to the last column
+  return `${tabName}!${startColumn}1:${endColumn}`; // Range from the "Question" column to the last column
 }
 
 // Fetch the dynamic range based on the "Question" column.
-function fetchDynamicRange() {
-return getHeaderRow().then(headerRow => {
-  const questionColumnIndex = findQuestionColumnIndex(headerRow);
-  const lastColumnIndex = headerRow.length; // The last column index is the count of headers
-  const dynamicRange = buildRangeString(questionColumnIndex, lastColumnIndex);
-  return dynamicRange;
-});
+function fetchDynamicQuestionDataRange() {
+  return getHeaderRow().then(headerRow => {
+    const questionColumnIndex = findColumnIndex(headerRow, "SourceQuestionId");
+    const lastColumnIndex = headerRow.length; // The last column index is the count of headers
+    const dynamicRange = buildRangeString(questionColumnIndex, lastColumnIndex);
+    return dynamicRange;
+  });
 }
 
-// Load the data from Google Sheets.
-function loadFromGoogleSheets() {
-  fetchDynamicRange().then(sheetRange => {
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${sheetRange}?key=${apiKey}`;
-    // console.log(`url: ${url}`);
-
-    fetch(url)
-      .then(response => response.json())
-      .then(data => {
-        const rows = data.values;
-        if (rows && rows.length > 0) {
-          triviaQuestions = rows.map((row, index) => {
-            // Skip header row by starting mapping at index 1
-            if (index === 0) return null;
-
-            const obj = {
-              'SourceQuestionId': row[0],
-              'Question': row[1],
-              'Correct': row[2],
-              'Wrong1': row[3],
-              'Wrong2': row[4],
-              'Wrong3': row[5]
-            };
-
-            // Shuffle the answers and store them
-            obj['RandomizedAnswers'] = shuffleArray([
-              obj['Correct'],
-              obj['Wrong1'],
-              obj['Wrong2'],
-              obj['Wrong3']
-            ]);
-
-            return obj;
-          }).filter(Boolean); // Filter out nulls (which represent the header row).
-
-          // Additional functions that handle the trivia questions
-          displayQuestion();
-          updateDifficultyCountDisplay();
-          document.addEventListener('keydown', handleKeydown);
-        } else {
-          console.log('No data found in the Google Sheet.');
-        }
-      })
-      .catch(error => {
-        console.error('Error fetching sheet data:', error);
-      });
-  }).catch(error => {
-    console.error('Error finding dynamic range:', error);
+// Fetch the dynamic range based on the "Ratings" column.
+function fetchRatingsCountColumnDataRange() {
+  return getHeaderRow().then(headerRow => {
+    const ratingsColumnIndex = findColumnIndex(headerRow, "Ratings");
+    const dynamicRange = buildRangeString(ratingsColumnIndex, ratingsColumnIndex);
+    return dynamicRange;
   });
+}
+
+// Fetch the dynamic range based on the "Ratings" column.
+function fetchUsernameColumnDataRange() {
+  return getHeaderRow().then(headerRow => {
+    const usernameColumnIndex = findColumnIndex(headerRow, `NewDiff\n(${username})`);
+    const usernameRange = buildRangeString(usernameColumnIndex, usernameColumnIndex);
+    return usernameRange;
+  });
+}
+
+
+function loadFromGoogleSheets() {
+  Promise.all([fetchDynamicQuestionDataRange(), fetchRatingsCountColumnDataRange(), fetchUsernameColumnDataRange()])
+    .then(([questionSheetRange, ratingsSheetRange, usernameSheetRange]) => {
+      const urlQuestions = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${questionSheetRange}?key=${apiKey}`;
+      const urlRatings = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${ratingsSheetRange}?key=${apiKey}`;
+      const urlUsername = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${usernameSheetRange}?key=${apiKey}`;
+
+      // Fetch question data
+      fetch(urlQuestions)
+        .then(response => response.json())
+        .then(data => {
+          const rows = data.values;
+          if (rows && rows.length > 0) {
+            triviaQuestions = rows.map((row, index) => {
+              // Skip header row by starting mapping at index 1
+              if (index === 0) return null;
+
+              const obj = {
+                'SourceQuestionId': row[0],
+                'Question': row[1],
+                'Correct': row[2],
+                'Wrong1': row[3],
+                'Wrong2': row[4],
+                'Wrong3': row[5]
+              };
+
+              // Shuffle the answers and store the shuffled set of Answer choices as an additional property in the main obj.
+              obj['RandomizedAnswers'] = shuffleArray([
+                obj['Correct'],
+                obj['Wrong1'],
+                obj['Wrong2'],
+                obj['Wrong3']
+              ]);
+
+              return obj;
+            }).filter(Boolean); // Filter out nulls (which represent the header row).
+
+            // Fetch ratings data
+            fetch(urlRatings)
+              .then(response => response.json())
+              .then(data => {
+                const ratings = data.values;
+                if (ratings && ratings.length > 0) {
+                  ratings.forEach((rating, index) => {
+                    // Skip header row by starting mapping at index 1
+                    if (index === 0) return;
+
+                    const questionIndex = index - 1; // Adjust index to match triviaQuestions array
+                    if (questionIndex >= 0 && questionIndex < triviaQuestions.length) {
+                      triviaQuestions[questionIndex]['Ratings'] = rating[0];
+                    }
+                  });
+                }
+
+                // Fetch username data
+                fetch(urlUsername)
+                  .then(response => response.json())
+                  .then(data => {
+                    const usernameRatings = data.values;
+                    if (usernameRatings && usernameRatings.length > 0) {
+                      usernameRatings.forEach((usernameRating, index) => {
+                        // Skip header row by starting mapping at index 1
+                        if (index === 0) return;
+
+                        const questionIndex = index - 1; // Adjust index to match triviaQuestions array
+                        if (questionIndex >= 0 && questionIndex < triviaQuestions.length) {
+                          triviaQuestions[questionIndex][`NewDiff (${username})`] = usernameRating[0];
+                        }
+                      });
+                    }
+
+                    // Filter out questions with Ratings > 10 and questions whose username column contains a value
+                    filteredTriviaQuestions = triviaQuestions.filter(question =>
+                      question.Ratings < 10 && !question[`NewDiff (${username})`]
+                    );
+                    
+                    // Additional functions that handle the trivia questions
+                    displayQuestion();
+                    updateDifficultyCountDisplay();
+                    document.addEventListener('keydown', handleKeydown);
+                  })
+                  .catch(error => {
+                    console.error('Error fetching username data:', error);
+                  });
+              })
+              .catch(error => {
+                console.error('Error fetching ratings data:', error);
+              });
+          } else {
+            console.log('No data available');
+          }
+        })
+        .catch(error => {
+          console.error('Error fetching question data:', error);
+        });
+    })
+    .catch(error => {
+      console.error('Error fetching sheet data ranges:', error);
+    });
 }
 
 // Shuffle function to be used by loadFromGoogleSheets for answer choices
@@ -269,6 +340,7 @@ function adminModeSetup() {
 
 // Display each question and its answer choices.
 function displayQuestion() {
+  // console.log(`filteredTriviaQuestions: ${JSON.stringify(filteredTriviaQuestions, null, 2)}`);
   if (admin) {
     questionElement = document.getElementById('question-admin');
   } else {
@@ -283,11 +355,10 @@ function displayQuestion() {
   answerChoicesElement.innerHTML = '';
 
   // Get the current question and its stored randomized answers.
-  const currentItem = triviaQuestions[currentQuestionIndex];
+  const currentItem = filteredTriviaQuestions[currentQuestionIndex];
   const question = currentItem['Question'];
   const correctAnswer = currentItem['Correct'];
   const randomizedAnswers = currentItem['RandomizedAnswers'];
-
 
   if (admin) {
     // Make the question text an editable text field.
@@ -298,7 +369,7 @@ function displayQuestion() {
   }
 
   // Update the question count display.
-  questionCountElement.textContent = `${currentQuestionIndex + 1}/${triviaQuestions.length}`;
+  questionCountElement.textContent = `${currentQuestionIndex + 1}/${filteredTriviaQuestions.length}`;
 
   // Display the stored randomized answer choices.
   randomizedAnswers.forEach(answer => {
@@ -372,7 +443,7 @@ function handleAnswerClick(selectedLi, selectedAnswer, correctAnswer) {
 // Reveal the correct answer (we'll use this for the spacebar user shortcut).
 function revealCorrectAnswer() {
   // Retrieve the correct answer for the current question.
-  const correctAnswer = triviaQuestions[currentQuestionIndex]['Correct'];
+  const correctAnswer = filteredTriviaQuestions[currentQuestionIndex]['Correct'];
   
   // Find the <li> element that contains the correct answer text.
   const answerListItems = document.querySelectorAll('.answer-choices li');
@@ -396,7 +467,7 @@ function revealCorrectAnswer() {
 
 // Mark the difficulty score and highlight the corresponding button.
 function markDifficulty(score) {
-  const currentItem = triviaQuestions[currentQuestionIndex];
+  const currentItem = filteredTriviaQuestions[currentQuestionIndex];
   const newDiffValue = score.toString(); // Convert the score to a string.
   const sourceQuestionIdValue = currentItem['SourceQuestionId'];
   currentItem[`NewDiff (${username})`] = newDiffValue; // Save the user's input in the 'NewDiff' property.
@@ -426,7 +497,7 @@ function highlightDifficultyButton(buttonId) {
 // Count the number of non-empty values in the 'NewDiff' column.
 function countMarkedDifficulties() {
   let count = 0;
-  triviaQuestions.forEach(function(question) {
+  filteredTriviaQuestions.forEach(function(question) {
     // Check if 'NewDiff' exists and is not empty
     if (question[`NewDiff (${username})`]) {
       count++;
@@ -440,7 +511,7 @@ function updateDifficultyCountDisplay() {
   const count = countMarkedDifficulties();
   const countElement = document.getElementById('difficulty-count');
   if (countElement) {
-    countElement.textContent = `${count}/${triviaQuestions.length}`;
+    countElement.textContent = `${count}/${filteredTriviaQuestions.length}`;
   }
 }
 
@@ -458,7 +529,7 @@ function previousQuestion() {
 
 // Move to the next question.
 function nextQuestion() {
-  if (currentQuestionIndex < triviaQuestions.length - 1) {
+  if (currentQuestionIndex < filteredTriviaQuestions.length - 1) {
     currentQuestionIndex += 1;
     displayQuestion();
   }
