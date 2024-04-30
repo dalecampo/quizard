@@ -104,7 +104,8 @@
             <a href="https://www.flaticon.com/free-icons/wizard" title="wizard icons" target="_blank">Wizard icons created by Flat Icons - Flaticon</a>
         </footer>
         <script>
-            let adminMode = false;
+            // For now, I will not warn users about unsaved progress since HTML/POST communication is fast.
+            let adminMode = true;
             
             if (!adminMode) {
                 window.addEventListener('beforeunload', function (e) {
