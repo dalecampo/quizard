@@ -168,13 +168,6 @@ function getHeaderRow() {
   const headerRange = `${tabName}!1:1`;
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${headerRange}?key=${apiKey}`;
 
-const tabName = 'Q Ratings';
-const headerRange = `${tabName}!1:1`; // Adjust the sheet name as needed
-
-// Retrieve the header row.
-function getHeaderRow() {
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${headerRange}?key=${apiKey}`;
-
   return fetch(url)
       .then(response => response.json())
       .then(data => data.values[0]); // Assuming the first row is the header row
