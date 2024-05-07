@@ -152,21 +152,11 @@ document.addEventListener("DOMContentLoaded", function() {
 // Google Sheet Loading //
 //////////////////////////
 
-let tabName = '';
+const headerRange = 'Q Ratings!1:1'; // Adjust the sheet name as needed
 
 // Retrieve the header row.
 function getHeaderRow() {
-  let lastName = username.split('.')[1];
-  
-  // If the user's last name is 'prize,' they'll see 'Prize Game' tab questions instead of 'Q Ratings' Qs.
-  if (lastName === 'prize') {
-    tabName = 'Prize Game';
-  } else {
-    tabName = 'Q Ratings';
-  }
-
-  const headerRange = `${tabName}!1:1`;
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${headerRange}?key=${apiKey}`;
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${headerRange}?key=${apiKey}`;
 
   return fetch(url)
       .then(response => response.json())
